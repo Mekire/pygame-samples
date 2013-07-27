@@ -1,0 +1,1 @@
+This repository is a compilation of pygame examples that I wrote.  Most were created with the intent of helping people with questions on various forums.  The goal was to write concise examples which demonstrate individual pygame concepts, while still retaining a responsible coding style.
