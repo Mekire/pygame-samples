@@ -2,15 +2,16 @@
 This script implements a basic sprite that can move in all 8 directions.
 -Written by Sean J. McKiernan 'Mekire'
 """
+
 import os
 import sys
 import pygame as pg
 
 #This global constant serves as a very useful convenience for me.
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
-              pg.K_RIGHT : ( 1, 0),
-              pg.K_UP    : ( 0,-1),
-              pg.K_DOWN  : ( 0, 1)}
+               pg.K_RIGHT : ( 1, 0),
+               pg.K_UP    : ( 0,-1),
+               pg.K_DOWN  : ( 0, 1)}
 
 
 class Player(object):

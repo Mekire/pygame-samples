@@ -4,8 +4,8 @@ Basics introduction.  Change the screen color with a mouse click.
 
 import os  #used for os.environ
 import sys  #used for sys.exit
-from random import randint
 import pygame as pg  #import the pygame module (I abbreviate it pg for brevity).
+from random import randint
 
 
 class Control(object):
