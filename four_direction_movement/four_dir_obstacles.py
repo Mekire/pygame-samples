@@ -132,7 +132,7 @@ class Control(object):
         """Initialize standard attributes standardly."""
         self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
-        self.clock  = pg.time.Clock()
+        self.clock = pg.time.Clock()
         self.fps = 60.0
         self.done = False
         self.keys = pg.key.get_pressed()
