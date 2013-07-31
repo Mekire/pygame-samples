@@ -1,5 +1,7 @@
 """
 A very simple example showing how to drag an item with the mouse.
+
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os

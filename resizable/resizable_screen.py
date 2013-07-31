@@ -1,5 +1,7 @@
 """
 Demonstrates how to create a resizable display.  Aspect ratio is not maintained.
+
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os

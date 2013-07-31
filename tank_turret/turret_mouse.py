@@ -2,6 +2,8 @@
 This example is identical to the standard turret in tank.py, except the Turret
 now follows the mouse and fires with the left mouse button; instead of using the
 keyboard.
+
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os
@@ -22,7 +24,7 @@ class Turret(object):
         self.angle = self.get_angle(pg.mouse.get_pos())
 
     def get_angle(self,mouse):
-        """Finds the new angle between the center of the Turret and the mouse."""
+        """Find the new angle between the center of the Turret and the mouse."""
         offset = (self.rect.centerx-mouse[0],self.rect.centery-mouse[1])
         self.angle = math.degrees(math.atan2(*offset))-135
         old_center = self.rect.center

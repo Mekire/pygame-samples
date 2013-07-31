@@ -1,5 +1,7 @@
 """
 Basics introduction.  Change the screen color with a mouse click.
+
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os  #used for os.environ

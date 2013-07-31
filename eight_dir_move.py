@@ -1,5 +1,6 @@
 """
 This script implements a basic sprite that can move in all 8 directions.
+
 -Written by Sean J. McKiernan 'Mekire'
 """
 
@@ -28,8 +29,8 @@ class Player(object):
         If you want to use an image this is the place."""
         image = pg.Surface((self.rect.size)).convert_alpha()
         image.fill((0,0,0,0))
-        pg.draw.ellipse(image,(0,0,0),(1,1,self.rect.size[0]-2,self.rect.size[1]-2))
-        pg.draw.ellipse(image,(255,0,0),(6,6,self.rect.size[0]-12,self.rect.size[1]-12))
+        pg.draw.ellipse(image,(0,0,0),self.rect.inflate(-2,-2))
+        pg.draw.ellipse(image,(255,0,0),self.rect.inflate(-12,-12))
         return image
 
     def update(self,surface,keys):

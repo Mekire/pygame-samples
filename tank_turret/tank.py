@@ -2,6 +2,8 @@
 Demonstrates rotating an object without the center shifting and moving objects
 at angles using simple trigonometry. Left and Right arrows to rotate cannon.
 Spacebar to fire.
+
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os

@@ -2,7 +2,7 @@
 This script is identical to the four_dir_anim.py example except that some simple
 obstacles have been added to demonstrate basic collission detection.
 
-Written by Sean J. McKiernan 'Mekire'
+-Written by Sean J. McKiernan 'Mekire'
 """
 
 import os
