@@ -1,4 +1,4 @@
-"""This is identical tp fall_mask.py except that the sprite spins when moving
+"""This is identical to fall_mask.py except that the sprite spins when moving
 while contacting the ground. Just for fun."""
 import os,sys
 from random import randint
