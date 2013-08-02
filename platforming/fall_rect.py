@@ -12,6 +12,9 @@ import pygame as pg
 from random import randint
 
 
+CAPTION = "Basic Platforming: Rectangle Collision"
+
+
 class _Physics(object):
     """A simplified physics class.  Psuedo-gravity is often good enough."""
     def __init__(self):
@@ -30,33 +33,29 @@ class _Physics(object):
 
 class Player(_Physics,pg.sprite.Sprite):
     """Class representing our player."""
-    def __init__(self,location,speed,tester=False):
+    def __init__(self,location,speed):
         _Physics.__init__(self)
         pg.sprite.Sprite.__init__(self)
         self.image = PLAYER_IMAGE
         self.speed = speed
         self.jump_power = -8.5
         self.rect = self.image.get_rect(topleft=location)
-        if not tester:
-            self.test_sprite = Player(location,speed,True)
 
     def get_position(self,obstacles):
         """Calculate where our player will end up this frame including
-        collissions."""
+        collisions."""
         if not self.fall:
             self.check_falling(obstacles)
         else:
-            offset = (0,self.y_vel)
-            self.rect.y,self.fall = self.check_collisions(offset,1,obstacles)
+            self.fall = self.check_collisions((0,self.y_vel),1,obstacles)
         if self.x_vel:
-            offset = (self.x_vel,0)
-            self.rect.x = self.check_collisions(offset,0,obstacles)[0]
+            self.check_collisions((self.x_vel,0),0,obstacles)
 
     def check_falling(self,obstacles):
         """Checks one pixel below the player to see if the player is still on
         the ground."""
-        self.test_sprite.rect = self.rect.move((0,1))
-        if not pg.sprite.spritecollideany(self.test_sprite,obstacles):
+        test_rect = self.rect.move((0,1))
+        if test_rect.collidelist([obs.rect for obs in obstacles]) == -1:
             self.fall = True
 
     def check_collisions(self,offset,index,obstacles):
@@ -65,14 +64,14 @@ class Player(_Physics,pg.sprite.Sprite):
         and retested.  This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
-        self.test_sprite.rect = self.rect.move(offset)
-        while pg.sprite.spritecollideany(self.test_sprite,obstacles):
-            self.test_sprite.rect[index] += (1 if offset[index]<0 else -1)
+        self.rect.move_ip(offset)
+        while pg.sprite.spritecollideany(self,obstacles):
+            self.rect[index] += (1 if offset[index]<0 else -1)
             unaltered = False
-        return self.test_sprite.rect[index],unaltered
+        return unaltered
 
     def check_keys(self,keys):
-        """Find the players self.x_vel based on currently held keys."""
+        """Find the player's self.x_vel based on currently held keys."""
         self.x_vel = 0
         if keys[pg.K_LEFT] or keys[pg.K_a]:
             self.x_vel -= self.speed
@@ -146,6 +145,8 @@ class Control(object):
         self.screen.fill((50,50,50))
         self.obstacles.draw(self.screen)
         self.player.update(self.screen,self.obstacles,self.keys)
+        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        pg.display.set_caption(caption)
 
     def main_loop(self):
         """As simple as it gets."""
@@ -159,6 +160,7 @@ class Control(object):
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
+    pg.display.set_caption(CAPTION)
     pg.display.set_mode((700,500))
     PLAYER_IMAGE = pg.image.load("smallface.png").convert_alpha()
     SHADE_IMG = pg.image.load("shader.png").convert_alpha()
