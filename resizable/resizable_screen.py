@@ -40,11 +40,10 @@ class Control(object):
                 self.screen_rect = self.screen.get_rect()
 
     def update(self):
-        """Draw all objects on a surface a surface the size of the start window
-        just as we would normally draw them on the display surface.  Check if
-        the current resolution is the same as the original resolution.  If so
-        blit the image directly to the display; if not, resize the image
-        first."""
+        """Draw all objects on a surface the size of the start window just as we
+        would normally draw them on the display surface.  Check if the current
+        resolution is the same as the original resolution.  If so blit the image
+        directly to the display; if not, resize the image first."""
         self.image.fill(0)
         pg.draw.polygon(self.image,(255,0,0),[(0,500),(500,500),(250,0)])
         if self.screen_rect.size != SCREEN_START_SIZE:

@@ -43,6 +43,8 @@ class Player(_Physics,pg.sprite.Sprite):
     cache_rotations = {}
 
     def __init__(self,location,speed):
+        """The location is an (x,y) coordinate pair, and speed is the player's
+        speed in pixels per frame.  Speed should be an integer."""
         _Physics.__init__(self)
         pg.sprite.Sprite.__init__(self)
         self.angle = 0
