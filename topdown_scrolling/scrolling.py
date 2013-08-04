@@ -1,3 +1,11 @@
+"""
+This example shows a method of making a player stay centered on a scrolling
+map.  When the player moves close to the edges of the map he will move off
+center.  This implementation does not employ tiled maps.
+
+-Written by Sean J. McKiernan 'Mekire'
+"""
+
 import os
 import sys
 import pygame as pg
@@ -144,19 +152,6 @@ class Control(object):
             self.update()
             pg.display.update()
             self.clock.tick(self.fps)
-
-
-def image_from_url(url):
-    """Load an image from an url.  The return can be loaded by
-    pygame.image.load.  Python 2 and 3 compatible."""
-    try:
-        from urllib2 import urlopen
-        from cStringIO import StringIO as inout
-    except ImportError:
-        from urllib.request import urlopen
-        from io import BytesIO as inout
-    myurl = urlopen(url)
-    return inout(myurl.read())
 
 
 if __name__ == "__main__":
