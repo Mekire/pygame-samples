@@ -93,19 +93,10 @@ class Level(object):
     def update_viewport(self):
         """The viewport will stay centered on the player unless the player
         approaches the edge of the map."""
-        width,height = self.viewport.size
-        if self.player.rect.centerx <= width//2:
-            self.viewport.x = 0
-        elif self.player.rect.centerx >= self.rect.width-width//2:
-            self.viewport.x = self.rect.width-width
-        else:
-            self.viewport.centerx = self.player.rect.centerx
-        if self.player.rect.centery <= height//2:
-            self.viewport.y = 0
-        elif self.player.rect.centery >= self.rect.height-height//2:
-            self.viewport.y = self.rect.height-height
-        else:
-            self.viewport.centery = self.player.rect.centery
+        for i in (0,1):
+            minimal = max(0,self.player.rect.center[i]-self.viewport.size[i]//2)
+            maximal = self.rect.size[i]-self.viewport.size[i]
+            self.viewport[i] = min(minimal,maximal)
 
     def draw(self,surface):
         """Blit actors onto a copy of the map image; then blit the viewport
@@ -157,7 +148,7 @@ class Control(object):
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
-    pg.display.set_mode((700,500))
+    pg.display.set_mode((500,500))
     PLAY_IMG  = pg.image.load("smallface.png").convert_alpha()
     POND_IMG  = pg.image.load("pond.png").convert_alpha()
     run_it = Control()
