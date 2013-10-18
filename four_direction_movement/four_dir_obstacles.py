@@ -7,8 +7,8 @@ obstacles have been added to demonstrate basic collission detection.
 
 import os
 import sys
+import random
 import pygame as pg
-from random import randint
 
 
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
@@ -100,11 +100,22 @@ class Player(pg.sprite.Sprite):
         sprite.Group, obstacles."""
         self.adjust_images()
         if self.direction_stack:
-            old_rect = self.rect.copy()
-            self.rect.x += self.speed*DIRECT_DICT[self.direction_stack[-1]][0]
-            self.rect.y += self.speed*DIRECT_DICT[self.direction_stack[-1]][1]
-            if pg.sprite.spritecollide(self,obstacles,False):
-                self.rect = old_rect
+            self.movement(obstacles,0)
+            self.movement(obstacles,1)
+
+    def movement(self,obstacles,i):
+        """Move player and then check for collisions; adjusting as necessary."""
+        self.rect[i] += self.speed*DIRECT_DICT[self.direction_stack[-1]][i]
+        collisions = pg.sprite.spritecollide(self,obstacles,False)
+        if collisions:
+            self.adjust_on_collision(self.rect,collisions[0],i)
+
+    def adjust_on_collision(self,rect_to_adjust,collide,i):
+        """Adjust player's position if colliding with a solid block."""
+        if rect_to_adjust[i] < collide.rect[i]:
+            rect_to_adjust[i] = collide.rect[i]-rect_to_adjust.size[i]
+        else:
+            rect_to_adjust[i] = collide.rect[i]+collide.rect.size[i]
 
     def draw(self,surface):
         """Draw method seperated out from update."""
@@ -122,7 +133,7 @@ class Block(pg.sprite.Sprite):
     def make_image(self):
         """Let's not forget aesthetics."""
         self.image = pg.Surface((50,50)).convert_alpha()
-        self.image.fill([randint(0,255) for i in range(3)])
+        self.image.fill([random.randint(0,255) for i in range(3)])
         self.image.blit(SHADE_MASK,(0,0))
 
 

@@ -24,6 +24,7 @@ class Character(object):
         relative mouse movement."""
         if self.click:
             self.rect.move_ip(pg.mouse.get_rel())
+            self.rect.clamp_ip(surface.get_rect())
         self.text_rect.center = (self.rect.centerx,self.rect.centery+90)
         surface.blit(self.image,self.rect)
         surface.blit(self.text,self.text_rect)

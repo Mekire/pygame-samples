@@ -8,6 +8,12 @@ import os
 import sys
 import pygame as pg
 
+
+WHITE = (255,255,255)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+TRANSPARENT = (0, 0, 0, 0)
+
 #This global constant serves as a very useful convenience for me.
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
                pg.K_RIGHT : ( 1, 0),
@@ -27,10 +33,11 @@ class Player(object):
     def make_image(self):
         """Creates our hero (a red circle/ellipse with a black outline)
         If you want to use an image this is the place."""
-        image = pg.Surface((self.rect.size)).convert_alpha()
-        image.fill((0,0,0,0))
-        pg.draw.ellipse(image,(0,0,0),self.rect.inflate(-2,-2))
-        pg.draw.ellipse(image,(255,0,0),self.rect.inflate(-12,-12))
+        image = pg.Surface(self.rect.size).convert_alpha()
+        image.fill(TRANSPARENT)
+        image_rect = image.get_rect()
+        pg.draw.ellipse(image,BLACK,image_rect)
+        pg.draw.ellipse(image,RED,image_rect.inflate(-12,-12))
         return image
 
     def update(self,surface,keys):
@@ -60,17 +67,17 @@ class Control(object):
         self.player.rect.center = self.screen_rect.center
 
     def event_loop(self):
-        """One event loop.  Never cut your game off from the event loop."""
+        """One event loop. Never cut your game off from the event loop."""
         for event in pg.event.get():
             self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
 
     def main_loop(self):
-        """One game loop.  Simple and clean."""
+        """One game loop. Simple and clean."""
         while not self.done:
             self.event_loop()
-            self.screen.fill(-1) #Cute way to fill with white.
+            self.screen.fill(WHITE)
             self.player.update(self.screen,self.keys)
             pg.display.update()
             self.clock.tick(self.fps)

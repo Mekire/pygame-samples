@@ -1,10 +1,8 @@
 """
-Filling a request for showing the direction of collision.  This method uses
-masks (pixel perfect) collision methods, and is a little (possibly over)
-complicated.  It finds the direction of a collision by calculating a finite
-difference between colliding mask elements in both directions.  This technique
-can be extended to find the actually angle of collision (normal vector)
-between two simple colliding shapes.
+This is an example showing movement in 8-directions; but using image frames
+only in the four orthogonal directions.  I am still using the direction stack
+even though it is a bit complex so that the player's frame matches the key held,
+not just the last key pressed.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
@@ -15,17 +13,12 @@ import random
 import pygame as pg
 
 
-CAPTION = "Find Direction of Collision w/ Masks"
+CAPTION = "8 Direction Movement w/ Four Direction Animation"
 
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
                pg.K_RIGHT : ( 1, 0),
                pg.K_UP    : ( 0,-1),
                pg.K_DOWN  : ( 0, 1)}
-
-OPPOSITE_DICT = {pg.K_LEFT  : "right",
-                 pg.K_RIGHT : "left",
-                 pg.K_UP    : "bottom",
-                 pg.K_DOWN  : "top"}
 
 
 class Player(pg.sprite.Sprite):
@@ -95,9 +88,8 @@ class Player(pg.sprite.Sprite):
         """Update the sprite's animation as needed."""
         time_now = pg.time.get_ticks()
         if self.redraw or time_now-self.animate_timer > 1000/self.animate_fps:
-            if self.direction_stack:
-                self.frame = (self.frame+1) % len(self.walkframes)
-                self.image = self.walkframes[self.frame]
+            self.frame = (self.frame+1) % len(self.walkframes)
+            self.image = self.walkframes[self.frame]
             self.animate_timer = time_now
         if not self.image:
             self.image = self.walkframes[self.frame]
@@ -119,15 +111,18 @@ class Player(pg.sprite.Sprite):
     def update(self,obstacles):
         """We have added some logic here for collission detection against the
         sprite.Group, obstacles."""
-        self.adjust_images()
-        if self.direction_stack:
-            self.movement(obstacles,0)
-            self.movement(obstacles,1)
+        vector = [0,0]
+        for key in self.direction_stack:
+            vector[0] += self.speed*DIRECT_DICT[key][0]
+            vector[1] += self.speed*DIRECT_DICT[key][1]
+        if vector != [0,0]:
+            self.adjust_images()
+            self.movement(obstacles,vector[0],0)
+            self.movement(obstacles,vector[1],1)
 
-    def movement(self,obstacles,i):
+    def movement(self,obstacles,change,i):
         """Uses mask collision and decrements the player's position until
         clear of solid obstacles."""
-        change = self.speed*DIRECT_DICT[self.direction_stack[-1]][i]
         self.rect[i] += change
         collides = pg.sprite.spritecollide(self,obstacles,False)
         if collides:
@@ -139,38 +134,6 @@ class Player(pg.sprite.Sprite):
                 unaltered = False
                 first_collision = collides[0]
                 collides = pg.sprite.spritecollide(self,collides,False,callback)
-            if not unaltered:
-                self.print_collision_direction(first_collision)
-
-    def print_collision_direction(self,collision):
-        """Let us see how our implementation works."""
-        direction = self.get_collision_direction(collision)
-        print("Sprite collided with {} edge.".format(direction))
-
-    def get_collision_direction(self,other_sprite):
-        """Find what side of an object the player is running into."""
-        dx = self.get_finite_difference(other_sprite,0,self.speed)
-        dy = self.get_finite_difference(other_sprite,1,self.speed)
-        abs_x,abs_y = abs(dx),abs(dy)
-        if abs_x > abs_y:
-            return ("right" if dx>0 else "left")
-        elif abs_x < abs_y:
-            return ("bottom" if dy>0 else "top")
-        else:
-            return OPPOSITE_DICT[self.direction]
-
-    def get_finite_difference(self,other_sprite,index,delta=1):
-        """Find the finite difference in area of mask collision with the
-        rects position incremented and decremented in axis index."""
-        base_offset = [other_sprite.rect.x-self.rect.x,
-                       other_sprite.rect.y-self.rect.y]
-        offset_high = base_offset[:]
-        offset_low = base_offset[:]
-        offset_high[index] += delta
-        offset_low[index] -= delta
-        first_term = self.mask.overlap_area(other_sprite.mask,offset_high)
-        second_term = self.mask.overlap_area(other_sprite.mask,offset_low)
-        return first_term - second_term
 
     def draw(self,surface):
         """Draw method seperated out from update."""
