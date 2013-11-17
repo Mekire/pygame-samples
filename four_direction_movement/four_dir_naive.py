@@ -10,8 +10,8 @@ is very limited.
 
 import os
 import sys
+import random
 import pygame as pg
-from random import randint
 
 
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
@@ -157,7 +157,7 @@ class Block(pg.sprite.Sprite):
     def make_image(self):
         """Let's not forget aesthetics."""
         self.image = pg.Surface((50,50)).convert_alpha()
-        self.image.fill([randint(0,255) for i in range(3)])
+        self.image.fill([random.randint(0,255) for i in range(3)])
         self.image.blit(SHADE_MASK,(0,0))
 
 

@@ -234,7 +234,7 @@ class Control(object):
         """Our main game loop; I bet you'd never have guessed."""
         while not self.done:
             self.event_loop()
-            self.screen.fill(0)
+            self.screen.fill(pg.Color("black"))
             self.player.update(self.obstacles)
             self.obstacles.draw(self.screen)
             self.player.draw(self.screen)
