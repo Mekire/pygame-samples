@@ -153,7 +153,7 @@ class MovingBlock(Block):
                 self.change_direction(now)
             self.rect[self.axis] += self.speed
             self.move_player(now,player,obstacles)
-        if self.waiting and now-self.timer > self.delay:
+        elif now-self.timer > self.delay:
             self.waiting = False
 
     def move_player(self,now,player,obstacles):
@@ -191,7 +191,7 @@ class Control(object):
         self.player = Player((50,800), 4)
         self.viewport = self.screen.get_rect()
         self.level = pg.Surface((1000,1000)).convert()
-        self.rect = self.level.get_rect()
+        self.level_rect = self.level.get_rect()
         self.win_text,self.win_rect = self.make_text()
         self.obstacles = self.make_obstacles()
 
@@ -200,7 +200,7 @@ class Control(object):
         font = pg.font.Font(None,100)
         message = "You win. Celebrate."
         text = font.render(message,True,(100,100,175))
-        rect = text.get_rect(centerx=self.rect.centerx,y=100)
+        rect = text.get_rect(centerx=self.level_rect.centerx,y=100)
         return text,rect
 
     def make_obstacles(self):
@@ -228,7 +228,7 @@ class Control(object):
         approaches the edge of the map."""
         for i in (0,1):
             minimal = max(0,self.player.rect.center[i]-self.viewport.size[i]//2)
-            maximal = self.rect.size[i]-self.viewport.size[i]
+            maximal = self.level_rect.size[i]-self.viewport.size[i]
             self.viewport[i] = min(minimal,maximal)
 
     def event_loop(self):
