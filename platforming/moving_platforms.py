@@ -62,7 +62,7 @@ class Player(_Physics,pg.sprite.Sprite):
     def check_moving(self,obstacles):
         """Check if the player is standing on a moving platform."""
         if not self.fall:
-            self.collide_below = self.rect.move_ip((0,1))
+            self.rect.move_ip((0,1))
             self.collide_below = pg.sprite.spritecollide(self,obstacles,False)
             for collide in self.collide_below:
                 if collide.type == "moving":
