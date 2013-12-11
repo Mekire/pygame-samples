@@ -37,10 +37,11 @@ class Player(_Physics,pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((30,55)).convert()
         self.image.fill(pg.Color("red"))
-        self.speed = speed
-        self.jump_power = -8.5
         self.rect = self.image.get_rect(topleft=location)
+        self.speed = speed
+        self.jump_power = -8.0
         self.on_moving = False
+        self.collide_below = False
 
     def get_position(self,obstacles):
         """Calculate where our player will end up this frame including
@@ -188,7 +189,7 @@ class Control(object):
         self.fps = 60.0
         self.keys = pg.key.get_pressed()
         self.done = False
-        self.player = Player((50,800), 4)
+        self.player = Player((50,875), 4)
         self.viewport = self.screen.get_rect()
         self.level = pg.Surface((1000,1000)).convert()
         self.level_rect = self.level.get_rect()
