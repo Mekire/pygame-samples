@@ -40,6 +40,7 @@ class Player(_Physics,pg.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=location)
         self.speed = speed
         self.jump_power = -8.0
+        self.jump_cut_magnitude = -3.0
         self.on_moving = False
         self.collide_below = False
 
@@ -103,6 +104,13 @@ class Player(_Physics,pg.sprite.Sprite):
             self.y_vel = self.jump_power
             self.fall = True
             self.on_moving = False
+
+    def jump_cut(self):
+        """Called when the player releases the jump key before maximum height
+        is reached."""
+        if self.fall:
+            if self.y_vel < self.jump_cut_magnitude:
+                self.y_vel = self.jump_cut_magnitude
 
     def update(self,obstacles,keys):
         """Everything we need to stay updated."""
@@ -241,6 +249,9 @@ class Control(object):
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump(self.obstacles)
+            elif event.type == pg.KEYUP:
+                if event.key == pg.K_SPACE:
+                    self.player.jump_cut()
 
     def update(self):
         """Update the player, object, and redraw screen."""
