@@ -45,6 +45,14 @@ class Player(_Physics,pg.sprite.Sprite):
         self.on_moving = False
         self.collide_below = False
 
+    def check_keys(self,keys):
+        """Find the player's self.x_vel based on currently held keys."""
+        self.x_vel = 0
+        if keys[pg.K_LEFT] or keys[pg.K_a]:
+            self.x_vel -= self.speed
+        if keys[pg.K_RIGHT] or keys[pg.K_d]:
+            self.x_vel += self.speed
+
     def get_position(self,obstacles):
         """Calculate where our player will end up this frame including
         collisions."""
@@ -67,9 +75,6 @@ class Player(_Physics,pg.sprite.Sprite):
         player is in contact with multiple platforms, last detected platform
         will take presidence."""
         if not self.fall:
-            self.rect.move_ip((0,1))
-            self.collide_below = pg.sprite.spritecollide(self,obstacles,False)
-            self.rect.move_ip((0,-1))
             now_moving = self.on_moving
             any_moving,any_non_moving = [],[]
             for collide in self.collide_below:
@@ -95,19 +100,19 @@ class Player(_Physics,pg.sprite.Sprite):
             unaltered = False
         return unaltered
 
-    def check_keys(self,keys):
-        """Find the player's self.x_vel based on currently held keys."""
-        self.x_vel = 0
-        if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.x_vel -= self.speed
-        if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.x_vel += self.speed
-
     def check_above(self,obstacles):
         """When jumping, don't enter fall state if there is no room to jump."""
         self.rect.move_ip(0,-1)
         collide = pg.sprite.spritecollideany(self,obstacles)
         self.rect.move_ip(0,1)
+        return collide
+
+    def check_below(self,obstacles):
+        """Check one pixel below player to find out if contacting the
+        ground."""
+        self.rect.move_ip((0,1))
+        collide = pg.sprite.spritecollide(self,obstacles,False)
+        self.rect.move_ip((0,-1))
         return collide
 
     def jump(self,obstacles):
@@ -124,8 +129,13 @@ class Player(_Physics,pg.sprite.Sprite):
             if self.y_vel < self.jump_cut_magnitude:
                 self.y_vel = self.jump_cut_magnitude
 
+    def pre_update(self,obstacles):
+        """Ran before platforms are updated."""
+        self.collide_below = self.check_below(obstacles)
+        self.check_moving(obstacles)
+
     def update(self,obstacles,keys):
-        """Everything we need to stay updated."""
+        """Everything we need to stay updated; ran after platforms update."""
         self.check_keys(keys)
         self.get_position(obstacles)
         self.physics_update()
@@ -143,10 +153,6 @@ class Block(pg.sprite.Sprite):
         self.image = pg.Surface(self.rect.size).convert()
         self.image.fill(color)
         self.type = "normal"
-
-    def update(self,*args):
-        """Overloaded in MovingBlock."""
-        pass
 
 
 class MovingBlock(Block):
@@ -281,7 +287,7 @@ class Control(object):
 
     def update(self):
         """Update the player, obstacles, and current viewport."""
-        self.player.check_moving(self.obstacles)
+        self.player.pre_update(self.obstacles)
         self.obstacles.update(self.player,self.obstacles)
         self.player.update(self.obstacles,self.keys)
         self.update_viewport()
