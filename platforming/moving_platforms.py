@@ -10,6 +10,7 @@ import pygame as pg
 
 
 CAPTION = "Moving Platforms"
+SCREEN_SIZE = (700,500)
 
 
 class _Physics(object):
@@ -205,7 +206,7 @@ class MovingBlock(Block):
 class Control(object):
     """Class for managing event loop and game states."""
     def __init__(self):
-        """Nothing to see here folks.  Move along."""
+        """Initalize the display and prepare game objects."""
         self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
         self.clock = pg.time.Clock()
@@ -229,28 +230,28 @@ class Control(object):
 
     def make_obstacles(self):
         """Just adds some arbitrarily placed obstacles to a sprite.Group."""
-        obstacles = [Block(pg.Color("chocolate"),(0,980,1000,20)),
-                     Block(pg.Color("chocolate"),(0,0,20,1000)),
-                     Block(pg.Color("chocolate"),(980,0,20,1000)),
-                     Block(pg.Color("darkgreen"),(250,780,200,100)),
-                     Block(pg.Color("darkgreen"),(600,880,200,100)),
-                     Block(pg.Color("darkgreen"),(20,360,880,40)),
-                     Block(pg.Color("darkgreen"),(20,630,50,20)),
-                     Block(pg.Color("darkgreen"),(80,530,50,20)),
-                     Block(pg.Color("darkgreen"),(130,470,200,215)),
-                     Block(pg.Color("darkgreen"),(20,760,30,20)),
-                     Block(pg.Color("darkgreen"),(400,740,30,40)),
-                     MovingBlock(pg.Color("olivedrab"),(20,740,75,20),325,0),
-                     MovingBlock(pg.Color("olivedrab"),(600,500,100,20),880,0),
-                     MovingBlock(pg.Color("olivedrab"),
-                                 (420,475,100,20),550,1,speed=3,delay=200),
-                     MovingBlock(pg.Color("olivedrab"),
-                                 (450,700,50,20),930,1,initial=930),
-                     MovingBlock(pg.Color("olivedrab"),
-                                 (500,700,50,20),730,0,initial=730),
-                     MovingBlock(pg.Color("olivedrab"),
-                                 (780,700,50,20),895,0,speed=-1)]
-        return pg.sprite.Group(obstacles)
+        walls = [Block(pg.Color("chocolate"),(0,980,1000,20)),
+                 Block(pg.Color("chocolate"),(0,0,20,1000)),
+                 Block(pg.Color("chocolate"),(980,0,20,1000))]
+        static = [Block(pg.Color("darkgreen"),(250,780,200,100)),
+                  Block(pg.Color("darkgreen"),(600,880,200,100)),
+                  Block(pg.Color("darkgreen"),(20,360,880,40)),
+                  Block(pg.Color("darkgreen"),(20,630,50,20)),
+                  Block(pg.Color("darkgreen"),(80,530,50,20)),
+                  Block(pg.Color("darkgreen"),(130,470,200,215)),
+                  Block(pg.Color("darkgreen"),(20,760,30,20)),
+                  Block(pg.Color("darkgreen"),(400,740,30,40))]
+        moving = [MovingBlock(pg.Color("olivedrab"),(20,740,75,20),325,0),
+                  MovingBlock(pg.Color("olivedrab"),(600,500,100,20),880,0),
+                  MovingBlock(pg.Color("olivedrab"),
+                              (420,475,100,20),550,1,speed=3,delay=200),
+                  MovingBlock(pg.Color("olivedrab"),
+                              (450,700,50,20),930,1,initial=930),
+                  MovingBlock(pg.Color("olivedrab"),
+                              (500,700,50,20),730,0,initial=730),
+                  MovingBlock(pg.Color("olivedrab"),
+                              (780,700,50,20),895,0,speed=-1)]
+        return pg.sprite.Group(walls,static,moving)
 
     def update_viewport(self):
         """The viewport will stay centered on the player unless the player
@@ -274,18 +275,25 @@ class Control(object):
                     self.player.jump_cut()
 
     def update(self):
-        """Update the player, objects, and redraw screen."""
+        """Update the player, obstacles, and current viewport."""
         self.player.check_moving(self.obstacles)
         self.obstacles.update(self.player,self.obstacles)
         self.player.update(self.obstacles,self.keys)
         self.update_viewport()
 
     def draw(self):
+        """Draw all necessary objects to the level surface, and then draw
+        the viewport section of the level to the display surface."""
         self.level.fill(pg.Color("lightblue"))
         self.obstacles.draw(self.level)
         self.level.blit(self.win_text,self.win_rect)
         self.player.draw(self.level)
         self.screen.blit(self.level,(0,0),self.viewport)
+
+    def display_fps(self):
+        """Show the programs FPS in the window handle."""
+        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        pg.display.set_caption(caption)
 
     def main_loop(self):
         """As simple as it gets."""
@@ -295,15 +303,14 @@ class Control(object):
             self.draw()
             pg.display.update()
             self.clock.tick(self.fps)
-            caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
-            pg.display.set_caption(caption)
+            self.display_fps()
 
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
     pg.display.set_caption(CAPTION)
-    pg.display.set_mode((700,500))
+    pg.display.set_mode(SCREEN_SIZE)
     run_it = Control()
     run_it.main_loop()
     pg.quit()
