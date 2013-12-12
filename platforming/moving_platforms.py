@@ -249,7 +249,7 @@ class Control(object):
         moving = [MovingBlock(pg.Color("olivedrab"),(20,740,75,20),325,0),
                   MovingBlock(pg.Color("olivedrab"),(600,500,100,20),880,0),
                   MovingBlock(pg.Color("olivedrab"),
-                              (420,475,100,20),550,1,speed=3,delay=200),
+                              (420,430,100,20),550,1,speed=3,delay=200),
                   MovingBlock(pg.Color("olivedrab"),
                               (450,700,50,20),930,1,initial=930),
                   MovingBlock(pg.Color("olivedrab"),
