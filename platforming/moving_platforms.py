@@ -62,18 +62,31 @@ class Player(_Physics,pg.sprite.Sprite):
             self.on_moving = False
 
     def check_moving(self,obstacles):
-        """Check if the player is standing on a moving platform."""
+        """Check if the player is standing on a moving platform. If the
+        player is in contact with multiple platforms, last detected platform
+        will take presidence."""
         if not self.fall:
             self.rect.move_ip((0,1))
             self.collide_below = pg.sprite.spritecollide(self,obstacles,False)
+            self.rect.move_ip((0,-1))
+            current_state = self.on_moving
+            any_moving,any_non_moving = [],[]
             for collide in self.collide_below:
                 if collide.type == "moving":
                     self.on_moving = collide
-            self.rect.move_ip((0,-1))
+                    any_moving.append(collide)
+                else:
+                    any_non_moving.append(collide)
+            if current_state in any_moving:
+                self.on_moving = current_state
+            elif any_moving and any_non_moving:
+                self.on_moving = current_state
+            elif not any_moving:
+                self.on_moving = False
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
-        pixels.  If a collision is detected position is decremented by one pixel
+        pixels. If a collision is detected position is decremented by one pixel
         and retested. This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
@@ -140,9 +153,11 @@ class Block(pg.sprite.Sprite):
 class MovingBlock(Block):
     """A class to represent simple moving blocks. Currently only vertical
     and horizontal movement supported."""
-    def __init__(self,color,rect,end,axis,delay=500,speed=2):
+    def __init__(self,color,rect,end,axis,delay=500,speed=2,initial=None):
         Block.__init__(self,color,rect)
-        self.start = self.rect.topleft[axis]
+        self.start = self.rect[axis]
+        if initial:
+            self.rect[axis] = initial
         self.axis = axis
         self.end = end
         self.timer = 0.0
@@ -226,10 +241,15 @@ class Control(object):
                      Block(pg.Color("darkgreen"),(20,760,30,20)),
                      Block(pg.Color("darkgreen"),(400,740,30,40)),
                      MovingBlock(pg.Color("olivedrab"),(20,740,75,20),325,0),
-                     MovingBlock(pg.Color("olivedrab"),(600,500,100,20),880,0)]
-        rect = pg.Rect(420,475,100,20)
-        fast = MovingBlock(pg.Color("olivedrab"),rect,550,1,speed=3,delay=200)
-        obstacles.append(fast)
+                     MovingBlock(pg.Color("olivedrab"),(600,500,100,20),880,0),
+                     MovingBlock(pg.Color("olivedrab"),
+                                 (420,475,100,20),550,1,speed=3,delay=200),
+                     MovingBlock(pg.Color("olivedrab"),
+                                 (450,700,50,20),930,1,initial=930),
+                     MovingBlock(pg.Color("olivedrab"),
+                                 (500,700,50,20),730,0,initial=730),
+                     MovingBlock(pg.Color("olivedrab"),
+                                 (780,700,50,20),895,0,speed=-1)]
         return pg.sprite.Group(obstacles)
 
     def update_viewport(self):
@@ -254,11 +274,13 @@ class Control(object):
                     self.player.jump_cut()
 
     def update(self):
-        """Update the player, object, and redraw screen."""
+        """Update the player, objects, and redraw screen."""
         self.player.check_moving(self.obstacles)
         self.obstacles.update(self.player,self.obstacles)
         self.player.update(self.obstacles,self.keys)
         self.update_viewport()
+
+    def draw(self):
         self.level.fill(pg.Color("lightblue"))
         self.obstacles.draw(self.level)
         self.level.blit(self.win_text,self.win_rect)
@@ -270,6 +292,7 @@ class Control(object):
         while not self.done:
             self.event_loop()
             self.update()
+            self.draw()
             pg.display.update()
             self.clock.tick(self.fps)
             caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
