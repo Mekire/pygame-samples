@@ -80,7 +80,7 @@ class Player(_Physics,pg.sprite.Sprite):
                     any_non_moving.append(collide)
             if not any_moving:
                 self.on_moving = False
-            elif now_moving in any_moving or any_non_moving:
+            elif any_non_moving or now_moving in any_moving:
                 self.on_moving = now_moving
 
     def check_collisions(self,offset,index,obstacles):
@@ -172,20 +172,27 @@ class MovingBlock(Block):
         obstacles.remove(self)
         now = pg.time.get_ticks()
         if not self.waiting:
-            if not (self.start <= self.rect[self.axis] <= self.end):
+            speed = self.speed
+            start_passed = self.start >= self.rect[self.axis]+speed
+            end_passed = self.end <= self.rect[self.axis]+speed
+            if start_passed or end_passed:
+                if start_passed:
+                    speed = self.start-self.rect[self.axis]
+                else:
+                    speed = self.end-self.rect[self.axis]
                 self.change_direction(now)
-            self.rect[self.axis] += self.speed
-            self.move_player(now,player,obstacles)
+            self.rect[self.axis] += speed
+            self.move_player(now,player,obstacles,speed)
         elif now-self.timer > self.delay:
             self.waiting = False
 
-    def move_player(self,now,player,obstacles):
+    def move_player(self,now,player,obstacles,speed):
         """Moves the player both when on top of, or bumped by the platform.
         Collision checks are in place to prevent the block pushing the player
         through a wall."""
         if player.on_moving is self or pg.sprite.collide_rect(self,player):
             axis = self.axis
-            offset = (self.speed,self.speed)
+            offset = (speed,speed)
             player.check_collisions(offset,axis,obstacles)
             if pg.sprite.collide_rect(self,player):
                 if self.speed > 0:
