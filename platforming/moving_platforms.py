@@ -70,7 +70,7 @@ class Player(_Physics,pg.sprite.Sprite):
             self.rect.move_ip((0,1))
             self.collide_below = pg.sprite.spritecollide(self,obstacles,False)
             self.rect.move_ip((0,-1))
-            current_state = self.on_moving
+            now_moving = self.on_moving
             any_moving,any_non_moving = [],[]
             for collide in self.collide_below:
                 if collide.type == "moving":
@@ -78,12 +78,10 @@ class Player(_Physics,pg.sprite.Sprite):
                     any_moving.append(collide)
                 else:
                     any_non_moving.append(collide)
-            if current_state in any_moving:
-                self.on_moving = current_state
-            elif any_moving and any_non_moving:
-                self.on_moving = current_state
-            elif not any_moving:
+            if not any_moving:
                 self.on_moving = False
+            elif now_moving in any_moving or any_non_moving:
+                self.on_moving = now_moving
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
