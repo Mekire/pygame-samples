@@ -1,8 +1,10 @@
 """
 Script is identical to eight_dir_move with an adjustment so that the player
-moves at the correct speed when travelling at an angle.  The script is also
-changed to use a time step to update the player.  This means that speed is now
-in pixels per second, rather than pixels per frame.
+moves at the correct speed when travelling at an angle. The script is also
+changed to use a time step to update the player. This means that speed is now
+in pixels per second, rather than pixels per frame. The advantage of this is
+that the game will always update at the same speed, regardless of any frame
+loss.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
@@ -11,6 +13,9 @@ import os
 import sys
 import math
 import pygame as pg
+
+
+SCREEN_SIZE = (500,500)
 
 WHITE = (255,255,255)
 RED = (255, 0, 0)
@@ -63,7 +68,7 @@ class Player(object):
             self.move = list(self.rect.center)
 
     def draw(self,surface):
-        """Draws the player to the passed surface."""
+        """Draws the player to the target surface."""
         surface.blit(self.image,self.rect)
 
 
@@ -74,7 +79,7 @@ class Control(object):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         pg.init()
         pg.display.set_caption("Move me with the Arrow Keys.")
-        self.screen = pg.display.set_mode((500,500))
+        self.screen = pg.display.set_mode(SCREEN_SIZE)
         self.screen_rect = self.screen.get_rect()
         self.clock = pg.time.Clock()
         self.fps = 60.0

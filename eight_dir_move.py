@@ -9,6 +9,8 @@ import sys
 import pygame as pg
 
 
+SCREEN_SIZE = (500,500)
+
 WHITE = (255,255,255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
@@ -24,15 +26,14 @@ DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
 class Player(object):
     """This class will represent our user controlled character."""
     def __init__(self,rect,speed):
-        """Arguments are the players rect (x,y,width,height), and the
+        """Arguments are the player's rect (x,y,width,height), and their
         speed (in pixels/frame)"""
         self.rect = pg.Rect(rect)
         self.speed = speed
         self.image = self.make_image()
 
     def make_image(self):
-        """Creates our hero (a red circle/ellipse with a black outline)
-        If you want to use an image this is the place."""
+        """Creates our hero (a red circle/ellipse with a black outline)."""
         image = pg.Surface(self.rect.size).convert_alpha()
         image.fill(TRANSPARENT)
         image_rect = image.get_rect()
@@ -40,13 +41,16 @@ class Player(object):
         pg.draw.ellipse(image,RED,image_rect.inflate(-12,-12))
         return image
 
-    def update(self,surface,keys):
+    def update(self,screen_rect,keys):
         """Updates our player appropriately every frame."""
         for key in DIRECT_DICT:
             if keys[key]:
                 self.rect.x += DIRECT_DICT[key][0]*self.speed
                 self.rect.y += DIRECT_DICT[key][1]*self.speed
-        self.rect.clamp_ip(surface.get_rect()) #Keep player on screen.
+        self.rect.clamp_ip(screen_rect) #Keep player on screen.
+
+    def draw(self,surface):
+        """Blit image to the target surface."""
         surface.blit(self.image,self.rect)
 
 
@@ -57,7 +61,7 @@ class Control(object):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         pg.init()
         pg.display.set_caption("Move me with the Arrow Keys.")
-        self.screen = pg.display.set_mode((500,500))
+        self.screen = pg.display.set_mode(SCREEN_SIZE)
         self.screen_rect = self.screen.get_rect()
         self.clock = pg.time.Clock()
         self.fps = 60.0
@@ -77,8 +81,9 @@ class Control(object):
         """One game loop. Simple and clean."""
         while not self.done:
             self.event_loop()
+            self.player.update(self.screen_rect,self.keys)
             self.screen.fill(WHITE)
-            self.player.update(self.screen,self.keys)
+            self.player.draw(self.screen)
             pg.display.update()
             self.clock.tick(self.fps)
 
