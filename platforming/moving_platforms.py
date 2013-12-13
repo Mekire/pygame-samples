@@ -54,8 +54,7 @@ class Player(_Physics,pg.sprite.Sprite):
             self.x_vel += self.speed
 
     def get_position(self,obstacles):
-        """Calculate where our player will end up this frame including
-        collisions."""
+        """Calculate the player's position this frame, including collisions."""
         if not self.fall:
             self.check_falling(obstacles)
         else:
@@ -64,16 +63,15 @@ class Player(_Physics,pg.sprite.Sprite):
             self.check_collisions((self.x_vel,0),0,obstacles)
 
     def check_falling(self,obstacles):
-        """Checks one pixel below the player to see if the player is still on
-        the ground."""
+        """If player is not contacting the ground, enter fall state."""
         if not self.collide_below:
             self.fall = True
             self.on_moving = False
 
     def check_moving(self,obstacles):
-        """Check if the player is standing on a moving platform. If the
-        player is in contact with multiple platforms, last detected platform
-        will take presidence."""
+        """Check if the player is standing on a moving platform.
+        If the player is in contact with multiple platforms, the prevously
+        detected platform will take presidence."""
         if not self.fall:
             now_moving = self.on_moving
             any_moving,any_non_moving = [],[]
@@ -90,8 +88,8 @@ class Player(_Physics,pg.sprite.Sprite):
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
-        pixels. If a collision is detected position is decremented by one pixel
-        and retested. This continues until we find exactly how far we can
+        pixels. If a collision is detected, the position is decremented by one
+        pixel and retested. This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
         self.rect[index] += offset[index]
@@ -108,8 +106,7 @@ class Player(_Physics,pg.sprite.Sprite):
         return collide
 
     def check_below(self,obstacles):
-        """Check one pixel below player to find out if contacting the
-        ground."""
+        """Check to see if the player is contacting the ground."""
         self.rect.move_ip((0,1))
         collide = pg.sprite.spritecollide(self,obstacles,False)
         self.rect.move_ip((0,-1))
@@ -146,8 +143,9 @@ class Player(_Physics,pg.sprite.Sprite):
 
 
 class Block(pg.sprite.Sprite):
-    """Class representing obstacles."""
+    """A class representing solid obstacles."""
     def __init__(self,color,rect):
+        """The color is an (r,g,b) tuple; rect is a rect-style argument."""
         pg.sprite.Sprite.__init__(self)
         self.rect = pg.Rect(rect)
         self.image = pg.Surface(self.rect.size).convert()
@@ -156,9 +154,13 @@ class Block(pg.sprite.Sprite):
 
 
 class MovingBlock(Block):
-    """A class to represent simple moving blocks. Currently only vertical
-    and horizontal movement supported."""
+    """A class to represent horizontally and vertically moving blocks."""
     def __init__(self,color,rect,end,axis,delay=500,speed=2,initial=None):
+        """The moving block will travel in the direction of axis (0 or 1)
+        between rect.topleft and end. The delay argument is the amount of time
+        (in miliseconds) to pause when reaching an endpoint; speed is the
+        platforms speed in pixels/frame; if specified initial is the place
+        within the blocks path to start (defaulting to rect.topleft)."""
         Block.__init__(self,color,rect)
         self.start = self.rect[axis]
         if initial:
@@ -172,8 +174,7 @@ class MovingBlock(Block):
         self.type = "moving"
 
     def update(self,player,obstacles):
-        """Update the position of the moving platform. This should be done
-        before moving any actors."""
+        """Update position. This should be done before moving any actors."""
         obstacles = obstacles.copy()
         obstacles.remove(self)
         now = pg.time.get_ticks()
@@ -208,7 +209,7 @@ class MovingBlock(Block):
                 self.change_direction(now)
 
     def change_direction(self,now):
-        """Called when platform reaches an endpoint or has no more room."""
+        """Called when the platform reaches an endpoint or has no more room."""
         self.waiting = True
         self.timer = now
         self.speed *= -1
@@ -232,7 +233,7 @@ class Control(object):
         self.obstacles = self.make_obstacles()
 
     def make_text(self):
-        """Nothing to see here."""
+        """Renders a text object. Text is only rendered once."""
         font = pg.font.Font(None,100)
         message = "You win. Celebrate."
         text = font.render(message,True,(100,100,175))
@@ -240,7 +241,7 @@ class Control(object):
         return text,rect
 
     def make_obstacles(self):
-        """Just adds some arbitrarily placed obstacles to a sprite.Group."""
+        """Adds some arbitrarily placed obstacles to a sprite.Group."""
         walls = [Block(pg.Color("chocolate"),(0,980,1000,20)),
                  Block(pg.Color("chocolate"),(0,0,20,1000)),
                  Block(pg.Color("chocolate"),(980,0,20,1000))]
@@ -275,7 +276,6 @@ class Control(object):
     def event_loop(self):
         """We can always quit, and the player can sometimes jump."""
         for event in pg.event.get():
-            self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
             elif event.type == pg.KEYDOWN:
@@ -287,6 +287,7 @@ class Control(object):
 
     def update(self):
         """Update the player, obstacles, and current viewport."""
+        self.keys = pg.key.get_pressed()
         self.player.pre_update(self.obstacles)
         self.obstacles.update(self.player,self.obstacles)
         self.player.update(self.obstacles,self.keys)
