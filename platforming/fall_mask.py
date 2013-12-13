@@ -71,7 +71,7 @@ class Player(_Physics,pg.sprite.Sprite):
         self.rect.move_ip((0,1))
         collisions = pg.sprite.spritecollide(self,obstacles,False)
         collidable = pg.sprite.collide_mask
-        if not pg.sprite.spritecollide(self,collisions,False,collidable):
+        if not pg.sprite.spritecollideany(self,collisions,collidable):
             self.fall = True
         self.rect.move_ip((0,-1))
 
@@ -84,7 +84,7 @@ class Player(_Physics,pg.sprite.Sprite):
         self.rect.move_ip(offset)
         collisions = pg.sprite.spritecollide(self,obstacles,False)
         collidable = pg.sprite.collide_mask
-        while pg.sprite.spritecollide(self,collisions,False,collidable):
+        while pg.sprite.spritecollideany(self,collisions,collidable):
             self.rect[index] += (1 if offset[index]<0 else -1)
             unaltered = False
         return unaltered

@@ -8,11 +8,13 @@ functions from pygame.sprite, but no pixel-perfect collision.
 
 import os
 import sys
+import random
 import pygame as pg
-from random import randint
 
 
 CAPTION = "Basic Platforming: Rectangle Collision"
+SCREEN_SIZE = (700,500)
+BACKGROUND_COLOR = (50,50,50)
 
 
 class _Physics(object):
@@ -35,7 +37,7 @@ class Player(_Physics,pg.sprite.Sprite):
     """Class representing our player."""
     def __init__(self,location,speed):
         """The location is an (x,y) coordinate pair, and speed is the player's
-        speed in pixels per frame.  Speed should be an integer."""
+        speed in pixels per frame. Speed should be an integer."""
         _Physics.__init__(self)
         pg.sprite.Sprite.__init__(self)
         self.image = PLAYER_IMAGE
@@ -44,8 +46,7 @@ class Player(_Physics,pg.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=location)
 
     def get_position(self,obstacles):
-        """Calculate where our player will end up this frame including
-        collisions."""
+        """Calculate the player's position this frame, including collisions."""
         if not self.fall:
             self.check_falling(obstacles)
         else:
@@ -54,11 +55,11 @@ class Player(_Physics,pg.sprite.Sprite):
             self.check_collisions((self.x_vel,0),0,obstacles)
 
     def check_falling(self,obstacles):
-        """Checks one pixel below the player to see if the player is still on
-        the ground."""
-        test_rect = self.rect.move((0,1))
-        if test_rect.collidelist([obs.rect for obs in obstacles]) == -1:
+        """If player is not contacting the ground, enter fall state."""
+        self.rect.move_ip((0,1))
+        if not pg.sprite.spritecollideany(self,obstacles):
             self.fall = True
+        self.rect.move_ip((0,-1))
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
@@ -86,11 +87,14 @@ class Player(_Physics,pg.sprite.Sprite):
             self.y_vel = self.jump_power
             self.fall = True
 
-    def update(self,surface,obstacles,keys):
+    def update(self,obstacles,keys):
         """Everything we need to stay updated."""
         self.check_keys(keys)
         self.get_position(obstacles)
         self.physics_update()
+
+    def draw(self,surface):
+        """Blit the player to the target surface."""
         surface.blit(self.image,self.rect)
 
 
@@ -104,15 +108,16 @@ class Block(pg.sprite.Sprite):
 
     def make_image(self):
         """Something pretty to look at."""
+        color = [random.randint(0,255) for _ in range(3)]
         self.image = pg.Surface((50,50)).convert()
-        self.image.fill([randint(0,255) for i in range(3)])
+        self.image.fill(color)
         self.image.blit(SHADE_IMG,(0,0))
 
 
 class Control(object):
     """Class for managing event loop and game states."""
     def __init__(self):
-        """Nothing to see here folks.  Move along."""
+        """Nothing to see here folks. Move along."""
         self.screen = pg.display.get_surface()
         self.clock = pg.time.Clock()
         self.fps = 60.0
@@ -135,7 +140,6 @@ class Control(object):
     def event_loop(self):
         """We can always quit, and the player can sometimes jump."""
         for event in pg.event.get():
-            self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
             elif event.type == pg.KEYDOWN:
@@ -144,9 +148,17 @@ class Control(object):
 
     def update(self):
         """Redraw all screen objects and update the player."""
-        self.screen.fill((50,50,50))
+        self.keys = pg.key.get_pressed()
+        self.player.update(self.obstacles,self.keys)
+
+    def draw(self):
+        """Draw all necessary objects to the display surface."""
+        self.screen.fill(BACKGROUND_COLOR)
         self.obstacles.draw(self.screen)
-        self.player.update(self.screen,self.obstacles,self.keys)
+        self.player.draw(self.screen)
+
+    def display_fps(self):
+        """Show the programs FPS in the window handle."""
         caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
         pg.display.set_caption(caption)
 
@@ -155,15 +167,17 @@ class Control(object):
         while not self.done:
             self.event_loop()
             self.update()
+            self.draw()
             pg.display.update()
             self.clock.tick(self.fps)
+            self.display_fps()
 
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
     pg.display.set_caption(CAPTION)
-    pg.display.set_mode((700,500))
+    pg.display.set_mode(SCREEN_SIZE)
     PLAYER_IMAGE = pg.image.load("smallface.png").convert_alpha()
     SHADE_IMG = pg.image.load("shader.png").convert_alpha()
     run_it = Control()
