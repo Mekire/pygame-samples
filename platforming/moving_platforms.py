@@ -120,8 +120,7 @@ class Player(_Physics,pg.sprite.Sprite):
             self.on_moving = False
 
     def jump_cut(self):
-        """Called when the player releases the jump key before maximum height
-        is reached."""
+        """Called if player releases the jump key before maximum height."""
         if self.fall:
             if self.y_vel < self.jump_cut_magnitude:
                 self.y_vel = self.jump_cut_magnitude
