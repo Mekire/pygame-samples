@@ -17,8 +17,6 @@ class Character(object):
     def __init__(self,*rect_style_args):
         """Accepts arguments in all the same forms a pygame.Rect would."""
         self.rect = pg.Rect(rect_style_args)
-        self.image = pg.Surface(self.rect.size).convert()
-        self.image.fill(pg.Color("red"))
         self.text,self.text_rect = self.setup_font()
         self.click = False
 
@@ -41,7 +39,7 @@ class Character(object):
 
     def draw(self,surface):
         """Blit image and text to the target surface."""
-        surface.blit(self.image,self.rect)
+        surface.fill(pg.Color("red"),self.rect)
         surface.blit(self.text,self.text_rect)
 
 
