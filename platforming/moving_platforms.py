@@ -18,7 +18,7 @@ class _Physics(object):
     def __init__(self):
         """You can experiment with different gravity here."""
         self.x_vel = self.y_vel = 0
-        self.grav = 0.22
+        self.grav = 0.4
         self.fall = False
 
     def physics_update(self):
@@ -40,7 +40,7 @@ class Player(_Physics,pg.sprite.Sprite):
         self.image.fill(pg.Color("red"))
         self.rect = self.image.get_rect(topleft=location)
         self.speed = speed
-        self.jump_power = -8.0
+        self.jump_power = -9.0
         self.jump_cut_magnitude = -3.0
         self.on_moving = False
         self.collide_below = False
@@ -248,6 +248,7 @@ class Control(object):
         static = [Block(pg.Color("darkgreen"),(250,780,200,100)),
                   Block(pg.Color("darkgreen"),(600,880,200,100)),
                   Block(pg.Color("darkgreen"),(20,360,880,40)),
+                  Block(pg.Color("darkgreen"),(950,400,30,20)),
                   Block(pg.Color("darkgreen"),(20,630,50,20)),
                   Block(pg.Color("darkgreen"),(80,530,50,20)),
                   Block(pg.Color("darkgreen"),(130,470,200,215)),
