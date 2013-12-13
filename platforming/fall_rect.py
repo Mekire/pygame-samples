@@ -1,6 +1,6 @@
 """
-This shows some basic platforming using only rectangle collision.  The intent
-is to demonstrate what rectangle collision lacks.  This version uses collision
+This shows some basic platforming using only rectangle collision. The intent
+is to demonstrate what rectangle collision lacks. This version uses collision
 functions from pygame.sprite, but no pixel-perfect collision.
 
 -Written by Sean J. McKiernan 'Mekire'
@@ -18,7 +18,7 @@ BACKGROUND_COLOR = (50,50,50)
 
 
 class _Physics(object):
-    """A simplified physics class.  Psuedo-gravity is often good enough."""
+    """A simplified physics class. Psuedo-gravity is often good enough."""
     def __init__(self):
         """You can experiment with different gravity here."""
         self.x_vel = self.y_vel = 0
@@ -63,8 +63,8 @@ class Player(_Physics,pg.sprite.Sprite):
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
-        pixels.  If a collision is detected position is decremented by one pixel
-        and retested.  This continues until we find exactly how far we can
+        pixels.  If a collision is detected position is decremented by one
+        pixel and retested. This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
         self.rect.move_ip(offset)
@@ -99,9 +99,9 @@ class Player(_Physics,pg.sprite.Sprite):
 
 
 class Block(pg.sprite.Sprite):
-    """Class representing obstacles."""
+    """A class representing solid obstacles."""
     def __init__(self,location):
-        """Location is just an (x,y) coordinate pair."""
+        """The location argument is an (x,y) coordinate pair."""
         pg.sprite.Sprite.__init__(self)
         self.make_image()
         self.rect = pg.Rect(location,(50,50))
@@ -127,7 +127,7 @@ class Control(object):
         self.obstacles = self.make_obstacles()
 
     def make_obstacles(self):
-        """Just adds some arbitrarily placed obstacles to a sprite.Group."""
+        """Adds some arbitrarily placed obstacles to a sprite.Group."""
         obstacles = [Block((400,400)),Block((300,270)),Block((150,170))]
         obstacles += [Block((500+50*i,220)) for i in range(3)]
         for i in range(12):
@@ -147,7 +147,7 @@ class Control(object):
                     self.player.jump()
 
     def update(self):
-        """Redraw all screen objects and update the player."""
+        """Update held keys and the player."""
         self.keys = pg.key.get_pressed()
         self.player.update(self.obstacles,self.keys)
 

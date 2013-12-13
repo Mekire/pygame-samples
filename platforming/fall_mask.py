@@ -1,6 +1,6 @@
 """
 Demonstrates some simple platforming using mask collision. Shows the benefit
-of using pixel perfect collision detection.  When using mask collision
+of using pixel perfect collision detection. When using mask collision
 techniques, it is generally best to perfom initial rectangle collision tests
 before investing in the more expensive mask detection methods.
 
@@ -22,9 +22,9 @@ BACKGROUND_COLOR = (50,50,50)
 
 
 class _Physics(object):
-    """A simplified physics class.  Using a 'real' gravity function here,
-    though it is questionable whether or not it is worth the effort. Compare
-    to the effect of gravity in fall_rect and decide for yourself."""
+    """A simplified physics class. Using a 'real' gravity function here, though
+    it is questionable whether or not it is worth the effort. Compare to the
+    effect of gravity in fall_rect and decide for yourself."""
     def __init__(self):
         """You can experiment with different gravity here."""
         self.x_vel = self.y_vel = self.y_vel_i = 0
@@ -77,8 +77,8 @@ class Player(_Physics,pg.sprite.Sprite):
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
-        pixels.  If a collision is detected position is decremented by one pixel
-        and retested.  This continues until we find exactly how far we can
+        pixels.  If a collision is detected position is decremented by one
+        pixel and retested. This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
         self.rect.move_ip(offset)
@@ -115,7 +115,7 @@ class Player(_Physics,pg.sprite.Sprite):
 
 
 class Block(pg.sprite.Sprite):
-    """Class representing obstacles."""
+    """A class representing solid obstacles."""
     def __init__(self,location):
         """The location argument is an (x,y) coordinate pair."""
         pg.sprite.Sprite.__init__(self)
@@ -134,7 +134,7 @@ class Block(pg.sprite.Sprite):
 class Control(object):
     """Class for managing event loop and game states."""
     def __init__(self):
-        """Nothing to see here folks.  Move along."""
+        """Nothing to see here folks. Move along."""
         self.screen = pg.display.get_surface()
         self.clock = pg.time.Clock()
         self.fps = 60.0

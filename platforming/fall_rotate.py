@@ -1,6 +1,6 @@
 """
 This is identical to fall_mask, except that the sprite spins when moving
-while contacting the ground. Just for fun.  Shows how to cache rotation frames
+while contacting the ground. Just for fun. Shows how to cache rotation frames
 for times when you find rotation is too expensive to repeat.
 
 -Written by Sean J. McKiernan 'Mekire'
@@ -8,16 +8,18 @@ for times when you find rotation is too expensive to repeat.
 
 import os
 import sys
+import random
 import pygame as pg
-from random import randint
 
 
 CAPTION = "Basic Platforming: Rotating our face"
+SCREEN_SIZE = (700,500)
+BACKGROUND_COLOR = (50,50,50)
 
 
 class _Physics(object):
-    """A simplified physics class.  Using a 'real' gravity function here, though
-    it is questionable whether or not it is worth the effort.  Compare to the
+    """A simplified physics class. Using a 'real' gravity function here, though
+    it is questionable whether or not it is worth the effort. Compare to the
     effect of gravity in fall_rect and decide for yourself."""
     def __init__(self):
         """You can experiment with different gravity here."""
@@ -40,7 +42,7 @@ class _Physics(object):
 
 class Player(_Physics,pg.sprite.Sprite):
     """Class representing our player."""
-    cache_rotations = {}
+    rotation_cache = {}
 
     def __init__(self,location,speed):
         """The location is an (x,y) coordinate pair, and speed is the player's
@@ -57,22 +59,21 @@ class Player(_Physics,pg.sprite.Sprite):
     def make_image(self):
         """Rotate the player's image and cache the surface so that we don't
         need to perform identical rotations more than once."""
-        if self.angle in Player.cache_rotations:
-            return Player.cache_rotations[self.angle]
+        if self.angle in Player.rotation_cache:
+            image = Player.rotation_cache[self.angle]
         else:
-            temp = pg.Surface((self.rect.size)).convert_alpha()
-            temp_rect = temp.get_rect()
-            temp.fill((0,0,0,0))
-            temp.blit(BASEFACE,(0,0))
+            image = pg.Surface((self.rect.size)).convert_alpha()
+            image_rect = image.get_rect()
+            image.fill((0,0,0,0))
+            image.blit(BASEFACE,(0,0))
             face = pg.transform.rotozoom(FACE,self.angle,1)
-            face_rect = face.get_rect(center=temp_rect.center)
-            temp.blit(face,face_rect)
-            Player.cache_rotations[self.angle] = temp
-            return temp
+            face_rect = face.get_rect(center=image_rect.center)
+            image.blit(face,face_rect)
+            Player.rotation_cache[self.angle] = image
+        return image
 
     def get_position(self,obstacles):
-        """Calculate where our player will end up this frame including
-        collisions."""
+        """Calculate the player's position this frame, including collisions."""
         if not self.fall:
             self.check_falling(obstacles)
         else:
@@ -81,38 +82,41 @@ class Player(_Physics,pg.sprite.Sprite):
             self.check_collisions((self.x_vel,0),0,obstacles)
 
     def check_falling(self,obstacles):
-        """Checks one pixel below the player to see if the player is still on
-        the ground."""
-        old_rect = self.rect.copy()
+        """If player is not contacting the ground, enter fall state."""
         self.rect.move_ip((0,1))
         collisions = pg.sprite.spritecollide(self,obstacles,False)
-        if not any(pg.sprite.collide_mask(self,obs) for obs in collisions):
+        collidable = pg.sprite.collide_mask
+        if not pg.sprite.spritecollideany(self,collisions,collidable):
             self.fall = True
-        self.rect = old_rect
+        self.rect.move_ip((0,-1))
 
     def check_collisions(self,offset,index,obstacles):
         """This function checks if a collision would occur after moving offset
-        pixels.  If a collision is detected position is decremented by one pixel
-        and retested.  This continues until we find exactly how far we can
+        pixels.  If a collision is detected position is decremented by one
+        pixel and retested. This continues until we find exactly how far we can
         safely move, or we decide we can't move."""
         unaltered = True
         self.rect.move_ip(offset)
         collisions = pg.sprite.spritecollide(self,obstacles,False)
-        while any(pg.sprite.collide_mask(self,obs) for obs in collisions):
+        collidable = pg.sprite.collide_mask
+        while pg.sprite.spritecollideany(self,collisions,collidable):
             self.rect[index] += (1 if offset[index]<0 else -1)
             unaltered = False
         return unaltered
 
     def check_keys(self,keys):
-        """Find the player's self.x_vel based on currently held keys.  Rotate
-        the player's image if the player is grounded."""
+        """Find the player's self.x_vel based on currently held keys."""
         self.x_vel = 0
         if keys[pg.K_LEFT] or keys[pg.K_a]:
             self.x_vel -= self.speed
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.x_vel += self.speed
-        if not self.fall:
+
+    def rotate(self):
+        """Rotate the player's image if contacting the ground and moving."""
+        if not self.fall and self.x_vel:
             self.angle = (self.angle-self.x_vel)%360
+            self.image = self.make_image()
 
     def jump(self):
         """Called when the user presses the jump button."""
@@ -120,20 +124,23 @@ class Player(_Physics,pg.sprite.Sprite):
             self.y_vel_i = -self.jump_power
             self.fall = True
 
-    def update(self,surface,obstacles,keys):
+    def update(self,obstacles,keys):
         """Everything we need to stay updated."""
         self.check_keys(keys)
         self.get_position(obstacles)
         self.physics_update()
-        self.image = self.make_image()
+        self.rotate()
+
+    def draw(self,surface):
+        """Blit the player to the target surface."""
         blit_rect = self.image.get_rect(center=self.rect.center)
         surface.blit(self.image,blit_rect)
 
 
 class Block(pg.sprite.Sprite):
-    """Class representing obstacles."""
+    """A class representing solid obstacles."""
     def __init__(self,location):
-        """Location is just an (x,y) coordinate pair."""
+        """The location argument is an (x,y) coordinate pair."""
         pg.sprite.Sprite.__init__(self)
         self.make_image()
         self.mask = pg.mask.from_surface(self.image)
@@ -141,15 +148,16 @@ class Block(pg.sprite.Sprite):
 
     def make_image(self):
         """Something pretty to look at."""
+        color = [random.randint(0,255) for _ in range(3)]
         self.image = pg.Surface((50,50)).convert_alpha()
-        self.image.fill([randint(0,255) for i in range(3)])
+        self.image.fill(color)
         self.image.blit(SHADE_IMG,(0,0))
 
 
 class Control(object):
     """Class for managing event loop and game states."""
     def __init__(self):
-        """Nothing to see here folks.  Move along."""
+        """Nothing to see here folks. Move along."""
         self.screen = pg.display.get_surface()
         self.clock = pg.time.Clock()
         self.fps = 60.0
@@ -159,7 +167,7 @@ class Control(object):
         self.obstacles = self.make_obstacles()
 
     def make_obstacles(self):
-        """Just adds some arbitrarily placed obstacles to a sprite.Group."""
+        """Adds some arbitrarily placed obstacles to a sprite.Group."""
         obstacles = [Block((400,400)),Block((300,270)),Block((150,170))]
         obstacles += [Block((500+50*i,220)) for i in range(3)]
         for i in range(12):
@@ -172,7 +180,6 @@ class Control(object):
     def event_loop(self):
         """We can always quit, and the player can sometimes jump."""
         for event in pg.event.get():
-            self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
             elif event.type == pg.KEYDOWN:
@@ -180,10 +187,18 @@ class Control(object):
                     self.player.jump()
 
     def update(self):
-        """Redraw all screen objects and update the player."""
-        self.screen.fill((50,50,50))
+        """Update held keys and the player."""
+        self.keys = pg.key.get_pressed()
+        self.player.update(self.obstacles,self.keys)
+
+    def draw(self):
+        """Draw all necessary objects to the display surface."""
+        self.screen.fill(BACKGROUND_COLOR)
         self.obstacles.draw(self.screen)
-        self.player.update(self.screen,self.obstacles,self.keys)
+        self.player.draw(self.screen)
+
+    def display_fps(self):
+        """Show the programs FPS in the window handle."""
         caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
         pg.display.set_caption(caption)
 
@@ -192,15 +207,17 @@ class Control(object):
         while not self.done:
             self.event_loop()
             self.update()
+            self.draw()
             pg.display.update()
             self.clock.tick(self.fps)
+            self.display_fps()
 
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
     pg.display.set_caption(CAPTION)
-    pg.display.set_mode((700,500))
+    pg.display.set_mode(SCREEN_SIZE)
     BASEFACE = pg.image.load("base_face.png").convert_alpha()
     FACE  = pg.image.load("just_face.png").convert_alpha()
     SHADE_IMG = pg.image.load("shader.png").convert_alpha()
