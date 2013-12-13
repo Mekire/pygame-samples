@@ -270,9 +270,9 @@ class Control(object):
         """The viewport will stay centered on the player unless the player
         approaches the edge of the map."""
         for i in (0,1):
-            minimal = max(0,self.player.rect.center[i]-self.viewport.size[i]//2)
-            maximal = self.level_rect.size[i]-self.viewport.size[i]
-            self.viewport[i] = min(minimal,maximal)
+            low = max(0,self.player.rect.center[i]-self.viewport.size[i]//2)
+            high = self.level_rect.size[i]-self.viewport.size[i]
+            self.viewport[i] = min(low,high)
 
     def event_loop(self):
         """We can always quit, and the player can sometimes jump."""

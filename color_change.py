@@ -1,13 +1,16 @@
 """
-Basics introduction.  Change the screen color with a mouse click.
+Basics introduction. Change the screen color with a mouse click.
+This program is intentionally over-commented to serve as an introduction for
+those with no knowledge of pygame. More advanced examples will not adhere to
+this convention.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
 
-import os  #used for os.environ
-import sys  #used for sys.exit
-import pygame as pg  #import the pygame module (I abbreviate it pg for brevity).
-from random import randint
+import os  #Used for os.environ.
+import sys  #Used for sys.exit.
+import random #Used for random.randint.
+import pygame as pg #I abbreviate pygame as pg for brevity.
 
 
 class Control(object):
@@ -33,7 +36,7 @@ class Control(object):
                 self.done = True
             elif event.type == pg.MOUSEBUTTONDOWN:
                 #If the user clicks the screen, change the color.
-                self.color = [randint(0,255) for i in range(3)]
+                self.color = [random.randint(0,255) for i in range(3)]
 
     def main_loop(self):
         """Our game loop. It calls the event loop; updates the display;
