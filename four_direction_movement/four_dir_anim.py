@@ -12,6 +12,11 @@ import sys
 import pygame as pg
 
 
+CAPTION = "4-Direction Movement with Animation"
+SCREEN_SIZE = (500,500)
+BACKGROUND_COLOR = (100,100,100)
+COLOR_KEY = (255,0,255)
+
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
                pg.K_RIGHT : ( 1, 0),
                pg.K_UP    : ( 0,-1),
@@ -31,26 +36,23 @@ class Player(object):
         self.direction_stack = [] #Held keys in the order they were pressed.
         self.redraw = False #Force redraw if needed.
         self.image = None
-        self.frame_inds = [[0,0],[1,0],[2,0],[3,0]]
         self.frame  = 0
-        self.frames = self.get_images(SKEL_IMAGE,self.frame_inds,self.rect.size)
+        self.frames = self.get_frames()
         self.animate_timer = 0.0
         self.animate_fps   = 7.0
         self.walkframes = []
         self.walkframe_dict = self.make_frame_dict()
         self.adjust_images()
 
-    def get_images(self,sheet,frame_indexes,size):
-        """Get the desired images from the sprite sheet."""
-        frames = []
-        for cell in frame_indexes:
-            frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
-            frames.append(sheet.subsurface(frame_rect))
-        return frames
+    def get_frames(self):
+        """Get a list of all frames."""
+        sheet = SKEL_IMAGE
+        indices = [[0,0],[1,0],[2,0],[3,0]]
+        return get_images(sheet,indices,self.rect.size)
 
     def make_frame_dict(self):
-        """Create a dictionary of direction keys to frames. We can use transform
-        functions to reduce the size of the sprite sheet we need."""
+        """Create a dictionary of direction keys to frames. We can use
+        transform functions to reduce the size of the sprite sheet we need."""
         frames = {pg.K_LEFT : [self.frames[0],self.frames[1]],
                   pg.K_RIGHT: [pg.transform.flip(self.frames[0],True,False),
                                pg.transform.flip(self.frames[1],True,False)],
@@ -70,12 +72,12 @@ class Player(object):
 
     def make_image(self):
         """Update the sprite's animation as needed."""
-        time_now = pg.time.get_ticks()
-        if self.redraw or time_now-self.animate_timer > 1000/self.animate_fps:
+        now = pg.time.get_ticks()
+        if self.redraw or now-self.animate_timer > 1000/self.animate_fps:
             if self.direction_stack:
                 self.frame = (self.frame+1) % len(self.walkframes)
                 self.image = self.walkframes[self.frame]
-            self.animate_timer = time_now
+            self.animate_timer = now
         if not self.image:
             self.image = self.walkframes[self.frame]
         self.redraw = False
@@ -93,20 +95,24 @@ class Player(object):
             if self.direction_stack:
                 self.direction = self.direction_stack[-1]
 
-    def update(self,surface):
+    def update(self,screen_rect):
         """Updates our player appropriately every frame."""
         self.adjust_images()
         if self.direction_stack:
-            self.rect.x += self.speed*DIRECT_DICT[self.direction_stack[-1]][0]
-            self.rect.y += self.speed*DIRECT_DICT[self.direction_stack[-1]][1]
-            self.rect.clamp_ip(surface.get_rect())
+            direction_vector = DIRECT_DICT[self.direction_stack[-1]]
+            self.rect.x += self.speed*direction_vector[0]
+            self.rect.y += self.speed*direction_vector[1]
+            self.rect.clamp_ip(screen_rect)
+
+    def draw(self,surface):
+        """Draws the player to the target surface."""
         surface.blit(self.image,self.rect)
 
 
 class Control(object):
     """Being controlling is our job."""
     def __init__(self):
-        """Initialize standard attributes standardly."""
+        """Initialize standard attributes, standardly."""
         self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
         self.clock  = pg.time.Clock()
@@ -117,8 +123,7 @@ class Control(object):
         self.player.rect.center = self.screen_rect.center
 
     def event_loop(self):
-        """Our event loop. Add and pop directions from the player's direction
-        stack as necessary."""
+        """Add/pop directions from player's direction stack as necessary."""
         for event in pg.event.get():
             self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
@@ -128,22 +133,39 @@ class Control(object):
             elif event.type == pg.KEYUP:
                 self.player.pop_direction(event.key)
 
+    def display_fps(self):
+        """Show the program's FPS in the window handle."""
+        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        pg.display.set_caption(caption)
+
     def main_loop(self):
         """Our main game loop; I bet you'd never have guessed."""
         while not self.done:
             self.event_loop()
-            self.screen.fill((100,100,100))
-            self.player.update(self.screen)
+            self.player.update(self.screen_rect)
+            self.screen.fill(BACKGROUND_COLOR)
+            self.player.draw(self.screen)
             pg.display.update()
             self.clock.tick(self.fps)
+            self.display_fps()
+
+
+def get_images(sheet,frame_indices,size):
+    """Get desired images from a sprite sheet."""
+    frames = []
+    for cell in frame_indices:
+        frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
+        frames.append(sheet.subsurface(frame_rect))
+    return frames
 
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
-    pg.display.set_mode((500,500))
+    pg.display.set_caption(CAPTION)
+    pg.display.set_mode(SCREEN_SIZE)
     SKEL_IMAGE = pg.image.load("skelly.png").convert()
-    SKEL_IMAGE.set_colorkey((255,0,255))
+    SKEL_IMAGE.set_colorkey(COLOR_KEY)
     run_it = Control()
     run_it.main_loop()
     pg.quit()
