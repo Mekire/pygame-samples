@@ -13,6 +13,9 @@ import pygame as pg
 
 
 CAPTION = "Collided Callback Test"
+SCREEN_SIZE = (500,500)
+BACKGROUND_COLOR = (40,40,40)
+COLOR_KEY = (255,0,255)
 
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
                pg.K_RIGHT : ( 1, 0),
@@ -22,7 +25,7 @@ DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
 
 def collide_other(other):
     """The other argument is a pygame.Rect that you would like to use for
-    sprite collision.  Return value is a collided callable for use with the
+    sprite collision. Return value is a collided callable for use with the
     pygame.sprite.spritecollide function."""
     def collide(one, two):
         return other.colliderect(two.rect)
@@ -45,22 +48,26 @@ class Player(pg.sprite.Sprite):
         self.direction_stack = [] #Held keys in the order they were pressed.
         self.redraw = False #Force redraw if needed.
         self.image = None
-        self.frame_inds = [[0,0],[1,0],[2,0],[3,0]]
         self.frame  = 0
-        self.frames = self.get_images(SKEL_IMAGE,self.frame_inds,self.rect.size)
+        self.frames = self.get_frames()
         self.animate_timer = 0.0
         self.animate_fps   = 7.0
         self.walkframes = []
         self.walkframe_dict = self.make_frame_dict()
         self.adjust_images()
 
-    def get_images(self,sheet,frame_indexes,size):
-        """Get the desired images from the sprite sheet."""
-        frames = []
-        for cell in frame_indexes:
-            frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
-            frames.append(sheet.subsurface(frame_rect))
-        return frames
+    def set_rects(self,value,attribute="topleft"):
+        """Set the position of both self.rect and self.hitrect together.
+        The attribute of self.rect will be set to value; then the midbottom
+        points will be set equal."""
+        setattr(self.rect,attribute,value)
+        self.hitrect.midbottom = self.rect.midbottom
+
+    def get_frames(self):
+        """Get a list of all frames."""
+        sheet = SKEL_IMAGE
+        indices = [[0,0],[1,0],[2,0],[3,0]]
+        return get_images(sheet,indices,self.rect.size)
 
     def make_frame_dict(self):
         """Create a dictionary of direction keys to frames. We can use transform
@@ -84,12 +91,12 @@ class Player(pg.sprite.Sprite):
 
     def make_image(self):
         """Update the sprite's animation as needed."""
-        time_now = pg.time.get_ticks()
-        if self.redraw or time_now-self.animate_timer > 1000/self.animate_fps:
+        now = pg.time.get_ticks()
+        if self.redraw or now-self.animate_timer > 1000/self.animate_fps:
             if self.direction_stack:
-                self.frame = (self.frame+1) % len(self.walkframes)
+                self.frame = (self.frame+1)%len(self.walkframes)
                 self.image = self.walkframes[self.frame]
-            self.animate_timer = time_now
+            self.animate_timer = now
         if not self.image:
             self.image = self.walkframes[self.frame]
         self.redraw = False
@@ -115,15 +122,15 @@ class Player(pg.sprite.Sprite):
             self.movement(obstacles,1)
 
     def movement(self,obstacles,i):
-        """Adjust player's position based on the rectangle of the block he
-        collides with."""
-        self.rect[i] += self.speed*DIRECT_DICT[self.direction_stack[-1]][i]
-        self.hitrect.midbottom = self.rect.midbottom
-        callback = collide_other(self.hitrect)
+        """Move player and then check for collisions; adjust as necessary."""
+        direction_vector = DIRECT_DICT[self.direction]
+        self.hitrect[i] += self.speed*direction_vector[i]
+        callback = collide_other(self.hitrect) #Collidable callback created.
         collisions = pg.sprite.spritecollide(self,obstacles,False,callback)
-        if collisions:
-            self.adjust_on_collision(self.hitrect,collisions[0],i)
-            self.rect.midbottom = self.hitrect.midbottom
+        while collisions:
+            collision = collisions.pop()
+            self.adjust_on_collision(self.hitrect,collision,i)
+        self.rect.midbottom = self.hitrect.midbottom
 
     def adjust_on_collision(self,rect_to_adjust,collide,i):
         """Adjust player's position if colliding with a solid block."""
@@ -142,14 +149,15 @@ class Block(pg.sprite.Sprite):
     def __init__(self,location):
         """The location argument is where I will be located."""
         pg.sprite.Sprite.__init__(self)
-        self.make_image()
-        self.rect = pg.Rect(location,(50,50))
+        self.image = self.make_image()
+        self.rect = self.image.get_rect(topleft=location)
 
     def make_image(self):
         """Let's not forget aesthetics."""
-        self.image = pg.Surface((50,50)).convert_alpha()
-        self.image.fill([random.randint(0,255) for i in range(3)])
-        self.image.blit(SHADE_MASK,(0,0))
+        image = pg.Surface((50,50)).convert_alpha()
+        image.fill([random.randint(0,255) for _ in range(3)])
+        image.blit(SHADE_MASK,(0,0))
+        return image
 
 
 class Control(object):
@@ -163,8 +171,8 @@ class Control(object):
         self.done = False
         self.keys = pg.key.get_pressed()
         self.player = Player((0,0,50,50),3)
-        self.player.rect.center = self.screen_rect.center
-        self.obstacles = pg.sprite.Group(self.make_obstacles())
+        self.player.set_rects(self.screen_rect.center,"center")
+        self.obstacles = self.make_obstacles()
 
     def make_obstacles(self):
         """Prepare some obstacles for our player to collide with."""
@@ -174,11 +182,10 @@ class Control(object):
             obstacles.append(Block((450,50*i)))
             obstacles.append(Block((50+i*50,450)))
             obstacles.append(Block((0,50+50*i)))
-        return obstacles
+        return pg.sprite.Group(obstacles)
 
     def event_loop(self):
-        """Our event loop. Add and pop directions from the player's direction
-        stack as necessary."""
+        """Add/pop directions from player's direction stack as necessary."""
         for event in pg.event.get():
             self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
@@ -188,31 +195,52 @@ class Control(object):
             elif event.type == pg.KEYUP:
                 self.player.pop_direction(event.key)
 
+    def draw(self):
+        """Draw all elements to the display surface."""
+        self.screen.fill(BACKGROUND_COLOR)
+        self.obstacles.draw(self.screen)
+        self.player.draw(self.screen)
+
+    def display_fps(self):
+        """Show the program's FPS in the window handle."""
+        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        pg.display.set_caption(caption)
+
     def main_loop(self):
         """Our main game loop; I bet you'd never have guessed."""
         while not self.done:
             self.event_loop()
-            self.update()
+            self.player.update(self.obstacles)
+            self.draw()
             pg.display.update()
             self.clock.tick(self.fps)
-
-    def update(self):
-        self.screen.fill(0)
-        self.player.update(self.obstacles)
-        self.obstacles.draw(self.screen)
-        self.player.draw(self.screen)
-        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
-        pg.display.set_caption(caption)
+            self.display_fps()
 
 
-if __name__ == "__main__":
+def get_images(sheet,frame_indices,size):
+    """Get desired images from a sprite sheet."""
+    frames = []
+    for cell in frame_indices:
+        frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
+        frames.append(sheet.subsurface(frame_rect))
+    return frames
+
+
+def main():
+    """Initialize, load our images, and run the program."""
+    global SKEL_IMAGE,SHADE_MASK
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
-    pg.display.set_mode((500,500))
+    pg.display.set_caption(CAPTION)
+    pg.display.set_mode(SCREEN_SIZE)
     SKEL_IMAGE = pg.image.load("skelly.png").convert()
-    SKEL_IMAGE.set_colorkey((255,0,255))
+    SKEL_IMAGE.set_colorkey(COLOR_KEY)
     SHADE_MASK = pg.image.load("shader.png").convert_alpha()
     run_it = Control()
     run_it.main_loop()
     pg.quit()
     sys.exit()
+
+
+if __name__ == "__main__":
+    main()

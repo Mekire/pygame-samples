@@ -75,7 +75,7 @@ class Player(object):
         now = pg.time.get_ticks()
         if self.redraw or now-self.animate_timer > 1000/self.animate_fps:
             if self.direction_stack:
-                self.frame = (self.frame+1) % len(self.walkframes)
+                self.frame = (self.frame+1)%len(self.walkframes)
                 self.image = self.walkframes[self.frame]
             self.animate_timer = now
         if not self.image:
