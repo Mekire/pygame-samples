@@ -2,7 +2,8 @@
 This is an example showing movement in 8-directions; but using image frames
 only in the four orthogonal directions. I am still using the direction stack
 even though it is a bit complex so that the player's frame matches the
-key held, not just the last key pressed.
+key held; not just the last key pressed.  This example also uses a timestep for
+updating at a constant framerate, and has accurate 45 degree movement speed.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
@@ -38,6 +39,7 @@ class Player(pg.sprite.Sprite):
         starting direction (given as a key-constant)."""
         pg.sprite.Sprite.__init__(self)
         self.rect = pg.Rect(rect)
+        self.remainder = [0,0]
         self.mask = self.make_mask()
         self.speed = speed
         self.direction = direction
@@ -69,8 +71,8 @@ class Player(pg.sprite.Sprite):
         return get_images(sheet,indices,self.rect.size)
 
     def make_frame_dict(self):
-        """Create a dictionary of direction keys to frames. We can use transform
-        functions to reduce the size of the sprite sheet we need."""
+        """Create a dictionary of direction keys to frames. We can use
+        transform functions to reduce the size of the sprite sheet we need."""
         frames = {pg.K_LEFT : [self.frames[0],self.frames[1]],
                   pg.K_RIGHT: [pg.transform.flip(self.frames[0],True,False),
                                pg.transform.flip(self.frames[1],True,False)],
@@ -113,12 +115,17 @@ class Player(pg.sprite.Sprite):
                 self.direction = self.direction_stack[-1]
 
     def update(self,obstacles,dt):
-        """We have added some logic here for collission detection against the
-        sprite.Group, obstacles."""
+        """Adjust the image and move as needed."""
         vector = [0,0]
         for key in self.direction_stack:
-            vector[0] += self.speed*DIRECT_DICT[key][0]
-            vector[1] += self.speed*DIRECT_DICT[key][1]
+            vector[0] += DIRECT_DICT[key][0]
+            vector[1] += DIRECT_DICT[key][1]
+        factor = (ANGLE_UNIT_SPEED if all(vector) else 1)
+        frame_speed = self.speed*factor*dt
+        self.remainder[0] += vector[0]*frame_speed
+        self.remainder[1] += vector[1]*frame_speed
+        vector[0],self.remainder[0] = divfmod(self.remainder[0],1)
+        vector[1],self.remainder[1] = divfmod(self.remainder[1],1)
         if vector != [0,0]:
             self.adjust_images()
             self.movement(obstacles,vector[0],0)
@@ -131,6 +138,7 @@ class Player(pg.sprite.Sprite):
         callback = pg.sprite.collide_mask
         while pg.sprite.spritecollideany(self,collisions,callback):
             self.rect[i] += (1 if offset<0 else -1)
+            self.remainder[i] = 0
 
     def draw(self,surface):
         """Draw method seperated out from update."""
@@ -164,7 +172,7 @@ class Control(object):
         self.fps = 60.0
         self.done = False
         self.keys = pg.key.get_pressed()
-        self.player = Player((0,0,50,50),3)
+        self.player = Player((0,0,50,50),190)
         self.player.rect.center = self.screen_rect.center
         self.obstacles = self.make_obstacles()
 
@@ -202,13 +210,13 @@ class Control(object):
 
     def main_loop(self):
         """Our main game loop; I bet you'd never have guessed."""
-        delta = self.clock.tick(self.fps)
+        delta = self.clock.tick(self.fps)/1000.0
         while not self.done:
             self.event_loop()
             self.player.update(self.obstacles,delta)
             self.draw()
             pg.display.update()
-            delta = self.clock.tick(self.fps)
+            delta = self.clock.tick(self.fps)/1000.0
             self.display_fps()
 
 
@@ -219,6 +227,13 @@ def get_images(sheet,frame_indices,size):
         frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
         frames.append(sheet.subsurface(frame_rect))
     return frames
+
+
+def divfmod(x,y):
+    """Identical to the builtin divmod but using math.fmod to retain signs."""
+    fmod = math.fmod(x,y)
+    div = (x-fmod)//y
+    return div,fmod
 
 
 def main():

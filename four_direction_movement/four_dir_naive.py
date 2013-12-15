@@ -59,8 +59,8 @@ class Player(pg.sprite.Sprite):
         return get_images(sheet,indices,self.rect.size)
 
     def make_frame_dict(self):
-        """Create a dictionary of direction keys to frames. We can use transform
-        functions to reduce the size of the sprite sheet we need."""
+        """Create a dictionary of direction keys to frames. We can use
+        transform functions to reduce the size of the sprite sheet we need."""
         frames = {pg.K_LEFT : [self.frames[0],self.frames[1]],
                   pg.K_RIGHT: [pg.transform.flip(self.frames[0],True,False),
                                pg.transform.flip(self.frames[1],True,False)],
