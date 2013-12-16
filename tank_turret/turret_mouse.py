@@ -1,7 +1,7 @@
 """
 This example is identical to the standard turret in tank.py, except the Turret
-now follows the mouse and fires with the left mouse button; instead of using the
-keyboard.
+now follows the mouse and fires with the left mouse button; instead of using
+the keyboard.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
