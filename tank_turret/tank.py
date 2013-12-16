@@ -12,6 +12,11 @@ import math
 import pygame as pg
 
 
+CAPTION = "Tank Turret: Keyboard"
+SCREEN_SIZE = (500,500)
+BACKGROUND_COLOR = (50,50,50)
+COLOR_KEY = (255,0,255)
+
 SPIN_DICT = {pg.K_LEFT  :  1,
              pg.K_RIGHT : -1}
 
@@ -45,13 +50,16 @@ class Turret(object):
             if event.key == pg.K_SPACE:
                 objects.add(Laser(self.rect.center,self.angle))
 
-    def update(self,surface,keys):
+    def update(self,keys):
         """Update our Turret and draw it to the surface."""
         self.spin = 0
         for key in SPIN_DICT:
             if keys[key]:
                 self.spin += SPIN_DICT[key]
         self.rotate()
+
+    def draw(self,surface):
+        """Draw base and barrel to the target surface."""
         surface.blit(self.base,self.base_rect)
         surface.blit(self.barrel,self.rect)
 
@@ -73,18 +81,17 @@ class Laser(pg.sprite.Sprite):
                       self.speed_magnitude*math.sin(self.angle))
         self.done = False
 
-    def update(self,surface):
-        """Because pygame.Rect's can only hold ints, it is necessary to preserve
+    def update(self,screen_rect):
+        """Because pygame.Rect's can only hold ints, it is necessary to hold
         the real value of our movement vector in another variable."""
         self.move[0] += self.speed[0]
         self.move[1] += self.speed[1]
         self.rect.topleft = self.move
-        self.remove(surface)
-        surface.blit(self.image,self.rect)
+        self.remove(screen_rect)
 
-    def remove(self,surface):
+    def remove(self,screen_rect):
         """If the projectile has left the screen, remove it from any Groups."""
-        if not self.rect.colliderect(surface.get_rect()):
+        if not self.rect.colliderect(screen_rect):
             self.kill()
 
 
@@ -94,9 +101,10 @@ class Control(object):
         """Prepare necessities; create a Turret; and create a Group for our
         laser projectiles."""
         self.screen = pg.display.get_surface()
+        self.screen_rect = self.screen.get_rect()
         self.done = False
         self.clock = pg.time.Clock()
-        self.fps = 60
+        self.fps = 60.0
         self.keys = pg.key.get_pressed()
         self.cannon = Turret((250,250))
         self.objects = pg.sprite.Group()
@@ -110,26 +118,39 @@ class Control(object):
             self.cannon.get_event(event,self.objects)
 
     def update(self):
-        """Redraw the screen, the Turret, and any Lasers."""
-        self.screen.fill((50,50,50))
-        self.cannon.update(self.screen,self.keys)
-        self.objects.update(self.screen)
+        """Update turret and all lasers."""
+        self.cannon.update(self.keys)
+        self.objects.update(self.screen_rect)
+
+    def draw(self):
+        """Draw all elements to the display surface."""
+        self.screen.fill(BACKGROUND_COLOR)
+        self.cannon.draw(self.screen)
+        self.objects.draw(self.screen)
+
+    def display_fps(self):
+        """Show the program's FPS in the window handle."""
+        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        pg.display.set_caption(caption)
 
     def main_loop(self):
         """"Same old story."""
         while not self.done:
             self.event_loop()
             self.update()
+            self.draw()
             pg.display.flip()
             self.clock.tick(self.fps)
+            self.display_fps()
 
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pg.init()
-    pg.display.set_mode((500,500))
+    pg.display.set_caption(CAPTION)
+    pg.display.set_mode(SCREEN_SIZE)
     TURRET = pg.image.load("turret.png").convert()
-    TURRET.set_colorkey((255,0,255))
+    TURRET.set_colorkey(COLOR_KEY)
     run_it = Control()
     run_it.main_loop()
     pg.quit()
