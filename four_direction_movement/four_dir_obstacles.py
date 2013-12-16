@@ -87,13 +87,16 @@ class Player(pg.sprite.Sprite):
     def add_direction(self,key):
         """Add a pressed direction key on the direction stack."""
         if key in DIRECT_DICT:
+            if key in self.direction_stack:
+                self.direction_stack.remove(key)
             self.direction_stack.append(key)
             self.direction = self.direction_stack[-1]
 
     def pop_direction(self,key):
         """Pop a released key from the direction stack."""
         if key in DIRECT_DICT:
-            self.direction_stack.remove(key)
+            if key in self.direction_stack:
+                self.direction_stack.remove(key)
             if self.direction_stack:
                 self.direction = self.direction_stack[-1]
 
