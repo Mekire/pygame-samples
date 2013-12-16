@@ -114,7 +114,7 @@ class Control(object):
             self.cannon.get_event(event,self.objects)
 
     def update(self):
-        """Redraw the screen, the Turret, and any Lasers."""
+        """Update all lasers."""
         self.objects.update(self.screen_rect)
 
     def draw(self):
