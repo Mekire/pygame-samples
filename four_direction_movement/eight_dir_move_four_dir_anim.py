@@ -2,7 +2,7 @@
 This is an example showing movement in 8-directions; but using image frames
 only in the four orthogonal directions. I am still using the direction stack
 even though it is a bit complex so that the player's frame matches the
-key held; not just the last key pressed.  This example also uses a timestep for
+key held; not just the last key pressed. This example also uses a timestep for
 updating at a constant framerate, and has accurate 45 degree movement speed.
 
 -Written by Sean J. McKiernan 'Mekire'
@@ -39,9 +39,9 @@ class Player(pg.sprite.Sprite):
         starting direction (given as a key-constant)."""
         pg.sprite.Sprite.__init__(self)
         self.rect = pg.Rect(rect)
-        self.remainder = [0,0]
+        self.remainder = [0,0] #Only adjust rect in integers; save remainders.
         self.mask = self.make_mask()
-        self.speed = speed
+        self.speed = speed #Pixels per second; not pixels per frame.
         self.direction = direction
         self.old_direction = None #The Players previous direction every frame.
         self.direction_stack = [] #Held keys in the order they were pressed.
@@ -104,13 +104,16 @@ class Player(pg.sprite.Sprite):
     def add_direction(self,key):
         """Add a pressed direction key on the direction stack."""
         if key in DIRECT_DICT:
+            if key in self.direction_stack:
+                self.direction_stack.remove(key)
             self.direction_stack.append(key)
             self.direction = self.direction_stack[-1]
 
     def pop_direction(self,key):
         """Pop a released key from the direction stack."""
         if key in DIRECT_DICT:
-            self.direction_stack.remove(key)
+            if key in self.direction_stack:
+                self.direction_stack.remove(key)
             if self.direction_stack:
                 self.direction = self.direction_stack[-1]
 

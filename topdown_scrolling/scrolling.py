@@ -26,12 +26,12 @@ DIRECT_DICT = {pg.K_UP   : ( 0,-1),
 
 class Player(object):
     """Our user controllable character."""
-    def __init__(self,location,speed):
+    def __init__(self,image,location,speed):
         """The location is an (x,y) coordinate; speed is in pixels per frame.
         The location of the player is with respect to the map he is in; not the
         display screen."""
         self.speed = speed
-        self.image = PLAY_IMAGE
+        self.image = image
         self.mask = pg.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=location)
 
@@ -121,7 +121,7 @@ class Control(object):
         self.fps = 60.0
         self.keys = pg.key.get_pressed()
         self.done = False
-        self.player = Player((0,0),7)
+        self.player = Player(PLAY_IMAGE,(0,0),7)
         self.level = Level(POND_IMAGE,self.screen_rect.copy(),self.player)
 
     def event_loop(self):
