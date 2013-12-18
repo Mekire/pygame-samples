@@ -28,6 +28,7 @@ from cursor import cursor_from_image
 
 SCREEN_SIZE = (500,500)
 BACKGROUND_COLOR = (50,50,60)
+CAPTION = "Custom Mouse Cursors"
 
 #This dictionary helps us change the cursor with keyboard input.
 CURSOR_TYPES = {"1" : "default",
@@ -44,6 +45,7 @@ class Control(object):
         the initial cursor as desired."""
         pg.init()
         os.environ["SDL_VIDEO_CENTERED"] = "TRUE"
+        pg.display.set_caption(CAPTION)
         self.screen = pg.display.set_mode(SCREEN_SIZE)
         self.screen_rect = self.screen.get_rect()
         self.done = False

@@ -124,6 +124,7 @@ def main():
     global ASTEROID
     pg.init()
     os.environ["SDL_VIDEO_CENTERED"] = "TRUE"
+    pg.display.set_caption(CAPTION)
     pg.display.set_mode(SCREEN_SIZE)
     ASTEROID = pg.image.load("asteroid_simple.png").convert_alpha()
     Control().main_loop()
