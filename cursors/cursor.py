@@ -1,13 +1,23 @@
+"""
+This script includes a function that can compile cursor data from an image.
+
+There are both advantages and disadvantages to using a real cursor over an
+image that follows the mouse. See the documentation at the top of the example
+script for more details.
+
+-Sean McKiernan
+"""
+
 import pygame as pg
 
 
 def cursor_from_image(image,size,hotspot,location=(0,0)):
-    """This functions return value is of the form accepted by
+    """This function's return value is of the form accepted by
     pg.mouse.set_cursor() (passed using the *args syntax). The argument image
     is an already loaded image surface containing your desired cursor; size is
     a single integer corresponding to the width of the cursor (must be a
     multiple of 8); hotspot is a 2-tuple representing the exact point in your
-    cursor that will represent the mouse pointer position; location is the
+    cursor that will represent the mouse position; location is a 2-tuple for
     where your cursor is located on the passed in image."""
     if size%8:
         raise ValueError("Size must be a multiple of 8.")
