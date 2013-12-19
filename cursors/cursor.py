@@ -22,7 +22,7 @@ def cursor_from_image(image,size,hotspot,location=(0,0),flip=False):
     will create the cursor with colors opposite to the source image."""
     if size%8:
         raise ValueError("Size must be a multiple of 8.")
-    compile_args = (".","X") if flip_colors else ("X",".")
+    compile_args = (".","X") if flip else ("X",".")
     colors = {(0,0,0,255):".", (255,255,255,255):"X"}
     cursor_string = []
     for j in range(size):

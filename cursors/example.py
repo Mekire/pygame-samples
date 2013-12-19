@@ -13,8 +13,8 @@ indeed what you want.
 
 Controls:
 With the grab cursor selected, clicking will switch the cursor between the
-grabbing and non-grabbing versions. The keys 1-5 will change between all the
-available cursors.
+grabbing and non-grabbing versions. The keys 0-9 and q,w,e,r will change
+between all the available cursors.
 
 -Sean McKiernan
 """
@@ -35,7 +35,16 @@ CURSOR_TYPES = {"1" : "default",
                 "2" : "cross",
                 "3" : "dropper",
                 "4" : "knight",
-                "5" : "open"}
+                "5" : "open",
+                "6" : "diamond",
+                "7" : "broken_x",
+                "8" : "tri_left",
+                "9" : "tri_right",
+                "0" : "arrow",
+                "q" : "thick_arrow",
+                "w" : "sizer_xy",
+                "e" : "sizer_x",
+                "r" : "sizer_y"}
 
 
 class Control(object):
@@ -59,20 +68,35 @@ class Control(object):
         """Create a dictionary that holds cursor data for all of our cursors,
         including the default cursor."""
         cursor_image = pg.image.load("cursor_images.png").convert()
+        thick = pg.cursors.compile(pg.cursors.thickarrow_strings)
+        sizer_x = pg.cursors.compile(pg.cursors.sizer_x_strings)
+        sizer_y = pg.cursors.compile(pg.cursors.sizer_y_strings)
+        sizer_xy = pg.cursors.compile(pg.cursors.sizer_xy_strings)
         cursors = {
-            "cross"   : cursor_from_image(cursor_image,16,(8,8)),
-            "dropper" : cursor_from_image(cursor_image,16,(0,15),(16,0)),
-            "open"    : cursor_from_image(cursor_image,24,(12,12),(32,0)),
-            "closed"  : cursor_from_image(cursor_image,24,(12,12),(32,24)),
-            "knight"  : cursor_from_image(cursor_image,32,(16,16),(0,16)),
-            "default" : pg.mouse.get_cursor()}
+            "cross"    : cursor_from_image(cursor_image,16,(8,8)),
+            "dropper"  : cursor_from_image(cursor_image,16,(0,15),(16,0)),
+            "open"     : cursor_from_image(cursor_image,24,(12,12),(32,0)),
+            "closed"   : cursor_from_image(cursor_image,24,(12,12),(32,24)),
+            "knight"   : cursor_from_image(cursor_image,32,(16,16),(0,16)),
+            "diamond"  : pg.cursors.diamond,
+            "broken_x" : pg.cursors.broken_x,
+            "tri_left" : pg.cursors.tri_left,
+            "tri_right": pg.cursors.tri_right,
+            "arrow"    : pg.cursors.arrow,
+            "thick_arrow" : ((24,24),(0,0),thick[0],thick[1]),
+            "sizer_xy" : ((24,16),(12,8),sizer_xy[0],sizer_xy[1]),
+            "sizer_x" : ((24,16),(8,12),sizer_x[0],sizer_x[1]),
+            "sizer_y" : ((16,24),(12,8),sizer_y[0],sizer_y[1]),
+            "default"  : pg.mouse.get_cursor()}
         return cursors
 
-    def change_cursor(self,cursor_name):
-        """Set the cursor to the value corresponding to cursor_name in the
+    def change_cursor(self,name):
+        """Set the cursor to the value corresponding to name in the
         cursor_dict. Return the cursor_name argument as a convenience."""
-        pg.mouse.set_cursor(*self.cursor_dict[cursor_name])
-        return cursor_name
+        pg.mouse.set_cursor(*self.cursor_dict[name])
+        template = "{} - Current cursor: {}"
+        pg.display.set_caption(template.format(CAPTION,name.capitalize()))
+        return name
 
     def event_loop(self):
         """Change between open and closed hands if using the grab cursor.
