@@ -11,16 +11,18 @@ script for more details.
 import pygame as pg
 
 
-def cursor_from_image(image,size,hotspot,location=(0,0)):
+def cursor_from_image(image,size,hotspot,location=(0,0),flip=False):
     """This function's return value is of the form accepted by
     pg.mouse.set_cursor() (passed using the *args syntax). The argument image
     is an already loaded image surface containing your desired cursor; size is
     a single integer corresponding to the width of the cursor (must be a
     multiple of 8); hotspot is a 2-tuple representing the exact point in your
     cursor that will represent the mouse position; location is a 2-tuple for
-    where your cursor is located on the passed in image."""
+    where your cursor is located on the passed in image. Setting flip to True
+    will create the cursor with colors opposite to the source image."""
     if size%8:
         raise ValueError("Size must be a multiple of 8.")
+    compile_args = (".","X") if flip_colors else ("X",".")
     colors = {(0,0,0,255):".", (255,255,255,255):"X"}
     cursor_string = []
     for j in range(size):
@@ -30,6 +32,6 @@ def cursor_from_image(image,size,hotspot,location=(0,0)):
             pixel = tuple(image.get_at(where))
             this_row.append(colors.get(pixel," "))
         cursor_string.append("".join(this_row))
-    xors,ands = pg.cursors.compile(cursor_string)
+    xors,ands = pg.cursors.compile(cursor_string,*compile_args)
     size = size,size
     return size,hotspot,xors,ands
