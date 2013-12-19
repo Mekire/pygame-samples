@@ -85,8 +85,8 @@ class Control(object):
             "arrow"    : pg.cursors.arrow,
             "thick_arrow" : ((24,24),(0,0),thick[0],thick[1]),
             "sizer_xy" : ((24,16),(12,8),sizer_xy[0],sizer_xy[1]),
-            "sizer_x" : ((24,16),(8,12),sizer_x[0],sizer_x[1]),
-            "sizer_y" : ((16,24),(12,8),sizer_y[0],sizer_y[1]),
+            "sizer_x" : ((24,16),(12,8),sizer_x[0],sizer_x[1]),
+            "sizer_y" : ((16,24),(8,12),sizer_y[0],sizer_y[1]),
             "default"  : pg.mouse.get_cursor()}
         return cursors
 
