@@ -1,9 +1,9 @@
 """
 This script demonstrates the usage of the cursor_from_image function.
-There are benefits to using a genuine cursor over an image that follows the
-mouse. Real cursors respond much faster as they are not drawn directly by your
-program logic.  If your framerate drops, the cursor will still operate
-unaffected.
+There are benefits to using a genuine hardware cursor over an image that
+follows the mouse. Real cursors respond much faster as they are not drawn
+directly by your program logic. If your framerate drops, the cursor will still
+operate unaffected.
 
 There are however two disadvantages; we cannot use color, and we
 cannot use a cursor larger than 32x32 pixels (doing so results in
