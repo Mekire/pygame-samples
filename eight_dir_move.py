@@ -9,9 +9,9 @@ import sys
 import pygame as pg
 
 
-SCREEN_SIZE = (500,500)
+SCREEN_SIZE = (500, 500)
 
-WHITE = (255,255,255)
+WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 TRANSPARENT = (0, 0, 0, 0)
@@ -25,9 +25,8 @@ DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
 
 class Player(object):
     """This class will represent our user controlled character."""
-    def __init__(self,rect,speed):
-        """Arguments are the player's rect (x,y,width,height), and their
-        speed (in pixels/frame)"""
+    def __init__(self, rect, speed):
+        """The rect arg is (x, y, width, height); speed is in pixels/frame)"""
         self.rect = pg.Rect(rect)
         self.speed = speed
         self.image = self.make_image()
@@ -37,11 +36,11 @@ class Player(object):
         image = pg.Surface(self.rect.size).convert_alpha()
         image.fill(TRANSPARENT)
         image_rect = image.get_rect()
-        pg.draw.ellipse(image,BLACK,image_rect)
-        pg.draw.ellipse(image,RED,image_rect.inflate(-12,-12))
+        pg.draw.ellipse(image, BLACK, image_rect)
+        pg.draw.ellipse(image, RED, image_rect.inflate(-12, -12))
         return image
 
-    def update(self,screen_rect,keys):
+    def update(self, screen_rect, keys):
         """Updates our player appropriately every frame."""
         for key in DIRECT_DICT:
             if keys[key]:
@@ -49,9 +48,9 @@ class Player(object):
                 self.rect.y += DIRECT_DICT[key][1]*self.speed
         self.rect.clamp_ip(screen_rect) #Keep player on screen.
 
-    def draw(self,surface):
+    def draw(self, surface):
         """Blit image to the target surface."""
-        surface.blit(self.image,self.rect)
+        surface.blit(self.image, self.rect)
 
 
 class Control(object):
@@ -67,7 +66,7 @@ class Control(object):
         self.fps = 60.0
         self.done = False
         self.keys = pg.key.get_pressed()
-        self.player = Player((0,0,100,100),5)  #Create an instance of Player.
+        self.player = Player((0, 0, 100, 100), 5)  #Create player instance.
         self.player.rect.center = self.screen_rect.center
 
     def event_loop(self):
@@ -81,7 +80,7 @@ class Control(object):
         """One game loop. Simple and clean."""
         while not self.done:
             self.event_loop()
-            self.player.update(self.screen_rect,self.keys)
+            self.player.update(self.screen_rect, self.keys)
             self.screen.fill(WHITE)
             self.player.draw(self.screen)
             pg.display.update()

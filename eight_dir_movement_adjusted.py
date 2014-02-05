@@ -15,9 +15,9 @@ import math
 import pygame as pg
 
 
-SCREEN_SIZE = (500,500)
+SCREEN_SIZE = (500, 500)
 
-WHITE = (255,255,255)
+WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 TRANSPARENT = (0, 0, 0, 0)
@@ -33,27 +33,28 @@ ANGLE_UNIT_SPEED = math.sqrt(2)/2
 
 class Player(object):
     """This class will represent our user controlled character."""
-    def __init__(self,speed,*rect):
-        """Arguments are the player's speed (in pixels/second) and the player's
-        rect (all rect style arguments accepted)"""
+    def __init__(self, speed, *rect):
+        """
+        Arguments are the player's speed (in pixels/second) and the player's
+        rect (all rect style arguments accepted).
+        """
         self.rect = pg.Rect(rect)
         self.move = list(self.rect.center)
         self.speed = speed
         self.image = self.make_image()
 
     def make_image(self):
-        """Creates our hero (a red circle/ellipse with a black outline)
-        If you want to use an image this is the place."""
+        """Creates our hero (a red circle/ellipse with a black outline)."""
         image = pg.Surface(self.rect.size).convert_alpha()
         image.fill(TRANSPARENT)
         image_rect = image.get_rect()
-        pg.draw.ellipse(image,BLACK,image_rect)
-        pg.draw.ellipse(image,RED,image_rect.inflate(-12,-12))
+        pg.draw.ellipse(image, BLACK, image_rect)
+        pg.draw.ellipse(image, RED, image_rect.inflate(-12, -12))
         return image
 
-    def update(self,screen_rect,keys,dt):
+    def update(self, screen_rect, keys, dt):
         """Updates our player appropriately every frame."""
-        vector = [0,0]
+        vector = [0, 0]
         for key in DIRECT_DICT:
             if keys[key]:
                 vector[0] += DIRECT_DICT[key][0]
@@ -67,9 +68,9 @@ class Player(object):
             self.rect.clamp_ip(screen_rect)
             self.move = list(self.rect.center)
 
-    def draw(self,surface):
+    def draw(self, surface):
         """Draws the player to the target surface."""
-        surface.blit(self.image,self.rect)
+        surface.blit(self.image, self.rect)
 
 
 class Control(object):
@@ -89,7 +90,7 @@ class Control(object):
 
     def make_player(self):
         """Create a player and set player.move and player.rect.center equal."""
-        player = Player(190,(0,0,100,100))
+        player = Player(190, (0, 0, 100, 100))
         player.move = list(self.screen_rect.center)
         return player
 
@@ -105,7 +106,7 @@ class Control(object):
         while not self.done:
             time_delta = self.clock.tick(self.fps)/1000.0
             self.event_loop()
-            self.player.update(self.screen_rect,self.keys,time_delta)
+            self.player.update(self.screen_rect, self.keys, time_delta)
             self.screen.fill(WHITE)
             self.player.draw(self.screen)
             pg.display.update()

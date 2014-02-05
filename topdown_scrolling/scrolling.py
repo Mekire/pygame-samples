@@ -15,7 +15,7 @@ import pygame as pg
 
 
 CAPTION = "Scrolling Background"
-SCREEN_SIZE = (500,500)
+SCREEN_SIZE = (500, 500)
 
 
 DIRECT_DICT = {pg.K_UP   : ( 0,-1),
@@ -26,61 +26,72 @@ DIRECT_DICT = {pg.K_UP   : ( 0,-1),
 
 class Player(object):
     """Our user controllable character."""
-    def __init__(self,image,location,speed):
-        """The location is an (x,y) coordinate; speed is in pixels per frame.
+    def __init__(self, image, location, speed):
+        """
+        The location is an (x,y) coordinate; speed is in pixels per frame.
         The location of the player is with respect to the map he is in; not the
-        display screen."""
+        display screen.
+        """
         self.speed = speed
         self.image = image
         self.mask = pg.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=location)
 
-    def update(self,level_mask,keys):
-        """Check pressed keys to find initial movement vector.  Then call
-        collision detection methods and adjust the vector appropriately."""
+    def update(self, level_mask, keys):
+        """
+        Check pressed keys to find initial movement vector.  Then call
+        collision detection methods and adjust the vector appropriately.
+        """
         move = self.check_keys(keys)
-        self.check_collisions(move,level_mask)
+        self.check_collisions(move, level_mask)
 
-    def check_keys(self,keys):
+    def check_keys(self, keys):
         """Find the players movement vector from key presses."""
-        move = [0,0]
+        move = [0, 0]
         for key in DIRECT_DICT:
             if keys[key]:
-                for i in (0,1):
+                for i in (0, 1):
                     move[i] += DIRECT_DICT[key][i]*self.speed
         return move
 
-    def check_collisions(self,move,level_mask):
-        """Call collision_detail for the x and y components of our movement
-        vector."""
-        x_change = self.collision_detail(move,level_mask,0)
+    def check_collisions(self, move, level_mask):
+        """
+        Call collision_detail for the x and y components of our movement vector.
+        """
+        x_change = self.collision_detail(move, level_mask, 0)
         self.rect.move_ip((x_change,0))
-        y_change = self.collision_detail(move,level_mask,1)
+        y_change = self.collision_detail(move, level_mask, 1)
         self.rect.move_ip((0,y_change))
 
-    def collision_detail(self,move,level_mask,index):
-        """Check for collision and if found decrement vector by single pixels
-        until clear."""
+    def collision_detail(self, move, level_mask, index):
+        """
+        Check for collision and if found decrement vector by single pixels
+        until clear.
+        """
         test_offset = list(self.rect.topleft)
         test_offset[index] += move[index]
-        while level_mask.overlap_area(self.mask,test_offset):
+        while level_mask.overlap_area(self.mask, test_offset):
             move[index] += (1 if move[index]<0 else -1)
             test_offset = list(self.rect.topleft)
             test_offset[index] += move[index]
         return move[index]
 
-    def draw(self,surface):
+    def draw(self, surface):
         """Basic draw function."""
-        surface.blit(self.image,self.rect)
+        surface.blit(self.image, self.rect)
 
 
 class Level(object):
-    """A class for our map. Maps in this implementation are one image; not
+    """
+    A class for our map. Maps in this implementation are one image; not
     tile based. This makes collision detection simpler but can have performance
-    implications."""
-    def __init__(self,map_image,viewport,player):
-        """Takes an image from which to make a mask, a viewport rect, and a
-        player instance."""
+    implications.
+    """
+    def __init__(self, map_image, viewport, player):
+        """
+        Takes an image from which to make a mask, a viewport rect, and a
+        player instance.
+        """
         self.image = map_image
         self.mask = pg.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
@@ -88,27 +99,33 @@ class Level(object):
         self.player.rect.center = self.rect.center
         self.viewport = viewport
 
-    def update(self,keys):
-        """Updates the player and then adjust the viewport with respect to the
-        player's new position."""
-        self.player.update(self.mask,keys)
+    def update(self, keys):
+        """
+        Updates the player and then adjust the viewport with respect to the
+        player's new position.
+        """
+        self.player.update(self.mask, keys)
         self.update_viewport()
 
     def update_viewport(self):
-        """The viewport will stay centered on the player unless the player
-        approaches the edge of the map."""
-        for i in (0,1):
-            low = max(0,self.player.rect.center[i]-self.viewport.size[i]//2)
+        """
+        The viewport will stay centered on the player unless the player
+        approaches the edge of the map.
+        """
+        for i in (0, 1):
+            low = max(0, self.player.rect.center[i]-self.viewport.size[i]//2)
             high = self.rect.size[i]-self.viewport.size[i]
-            self.viewport[i] = min(low,high)
+            self.viewport[i] = min(low, high)
 
-    def draw(self,surface):
-        """Blit actors onto a copy of the map image; then blit the viewport
-        portion of that map onto the display surface."""
+    def draw(self, surface):
+        """
+        Blit actors onto a copy of the map image; then blit the viewport
+        portion of that map onto the display surface.
+        """
         new_image = self.image.copy()
         self.player.draw(new_image)
         surface.fill((50,255,50))
-        surface.blit(new_image,(0,0),self.viewport)
+        surface.blit(new_image, (0,0), self.viewport)
 
 
 class Control(object):
@@ -121,8 +138,8 @@ class Control(object):
         self.fps = 60.0
         self.keys = pg.key.get_pressed()
         self.done = False
-        self.player = Player(PLAY_IMAGE,(0,0),7)
-        self.level = Level(POND_IMAGE,self.screen_rect.copy(),self.player)
+        self.player = Player(PLAY_IMAGE, (0,0), 7)
+        self.level = Level(POND_IMAGE, self.screen_rect.copy(), self.player)
 
     def event_loop(self):
         """A quiet day in the neighborhood here."""
@@ -133,12 +150,14 @@ class Control(object):
 
     def display_fps(self):
         """Show the program's FPS in the window handle."""
-        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        caption = "{} - FPS: {:.2f}".format(CAPTION, self.clock.get_fps())
         pg.display.set_caption(caption)
 
     def update(self):
-        """Update the level. In this implementation player updating is taken
-        care of by the level update function."""
+        """
+        Update the level. In this implementation player updating is taken
+        care of by the level update function.
+        """
         self.screen.fill(pg.Color("black"))
         self.level.update(self.keys)
         self.level.draw(self.screen)

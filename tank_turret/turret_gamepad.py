@@ -15,14 +15,14 @@ import pygame as pg
 
 
 CAPTION = "Tank Turret: Gamepad"
-SCREEN_SIZE = (500,500)
-BACKGROUND_COLOR = (50,50,50)
-COLOR_KEY = (255,0,255)
+SCREEN_SIZE = (500, 500)
+BACKGROUND_COLOR = (50, 50, 50)
+COLOR_KEY = (255, 0, 255)
 
 
 class Turret(object):
     """Gamepad guided lasers."""
-    def __init__(self,gamepad,location):
+    def __init__(self, gamepad, location):
         """Location is an (x,y) coordinate pair."""
         self.gamepad = gamepad
         self.id = gamepad.get_id()
@@ -34,57 +34,65 @@ class Turret(object):
         self.angle = 0
 
     def get_angle(self,tolerance=0.25):
-        """Get the current angle of the gampad's left analog stick. A tolerance
+        """
+        Get the current angle of the gampad's left analog stick. A tolerance
         is used to prevent angles recalcing when the stick is nearly
-        centered."""
-        x,y = self.gamepad.get_axis(0),self.gamepad.get_axis(1)
-        if abs(x)>tolerance or abs(y)>tolerance:
-            self.angle = -math.degrees(math.atan2(float(y),float(x)))+135
+        centered.
+        """
+        x, y = self.gamepad.get_axis(0), self.gamepad.get_axis(1)
+        if abs(x) > tolerance or abs(y) > tolerance:
+            self.angle = -math.degrees(math.atan2(float(y), float(x)))+135
             old_center = self.rect.center
-            self.barrel = pg.transform.rotate(self.original_barrel,self.angle)
+            self.barrel = pg.transform.rotate(self.original_barrel, self.angle)
             self.rect = self.barrel.get_rect(center=old_center)
 
-    def get_event(self,event,objects):
+    def get_event(self, event, objects):
         """Catch and process gamepad events."""
         if event.type == pg.JOYBUTTONDOWN:
             if event.joy == self.id and event.button == 0:
-                objects.add(Laser(self.rect.center,self.angle))
+                objects.add(Laser(self.rect.center, self.angle))
         elif event.type == pg.JOYAXISMOTION:
             if event.joy == self.id:
                 self.get_angle()
 
-    def draw(self,surface):
+    def draw(self, surface):
         """Draw base and barrel to the target surface."""
-        surface.blit(self.base,self.base_rect)
-        surface.blit(self.barrel,self.rect)
+        surface.blit(self.base, self.base_rect)
+        surface.blit(self.barrel, self.rect)
 
 
 class Laser(pg.sprite.Sprite):
-    """A class for our laser projectiles. Using the pygame.sprite.Sprite class
-    this time, though it is just as easily done without it."""
-    def __init__(self,location,angle):
-        """Takes a coordinate pair, and an angle in degrees. These are passed
-        in by the Turret class when the projectile is created."""
+    """
+    A class for our laser projectiles. Using the pygame.sprite.Sprite class
+    this time, though it is just as easily done without it.
+    """
+    def __init__(self, location, angle):
+        """
+        Takes a coordinate pair, and an angle in degrees. These are passed
+        in by the Turret class when the projectile is created.
+        """
         pg.sprite.Sprite.__init__(self)
         self.original_laser = TURRET.subsurface((150,0,150,150))
         self.angle = -math.radians(angle-135)
-        self.image = pg.transform.rotate(self.original_laser,angle)
+        self.image = pg.transform.rotate(self.original_laser, angle)
         self.rect = self.image.get_rect(center=location)
-        self.move = [self.rect.x,self.rect.y]
+        self.move = [self.rect.x, self.rect.y]
         self.speed_magnitude = 5
         self.speed = (self.speed_magnitude*math.cos(self.angle),
                       self.speed_magnitude*math.sin(self.angle))
         self.done = False
 
-    def update(self,screen_rect):
-        """Because pygame.Rect's can only hold ints, it is necessary to preserve
-        the real value of our movement vector in another variable."""
+    def update(self, screen_rect):
+        """
+        Because pygame.Rect's can only hold ints, it is necessary to preserve
+        the real value of our movement vector in another variable.
+        """
         self.move[0] += self.speed[0]
         self.move[1] += self.speed[1]
         self.rect.topleft = self.move
         self.remove(screen_rect)
 
-    def remove(self,screen_rect):
+    def remove(self, screen_rect):
         """If the projectile has left the screen, remove it from any Groups."""
         if not self.rect.colliderect(screen_rect):
             self.kill()
@@ -93,8 +101,10 @@ class Laser(pg.sprite.Sprite):
 class Control(object):
     """Why so controlling?"""
     def __init__(self):
-        """Prepare necessities; create a Turret; and create a Group for our
-        laser projectiles."""
+        """
+        Prepare necessities; create a Turret; and create a Group for our
+        laser projectiles.
+        """
         self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
         self.joys = initialize_all_gamepads()
@@ -102,7 +112,7 @@ class Control(object):
         self.clock = pg.time.Clock()
         self.fps = 60
         self.keys = pg.key.get_pressed()
-        self.cannon = Turret(self.joys[0],(250,250))
+        self.cannon = Turret(self.joys[0], (250,250))
         self.objects = pg.sprite.Group()
 
     def event_loop(self):
@@ -111,7 +121,7 @@ class Control(object):
             self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
-            self.cannon.get_event(event,self.objects)
+            self.cannon.get_event(event, self.objects)
 
     def update(self):
         """Update all lasers."""
@@ -125,7 +135,7 @@ class Control(object):
 
     def display_fps(self):
         """Show the program's FPS in the window handle."""
-        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        caption = "{} - FPS: {:.2f}".format(CAPTION, self.clock.get_fps())
         pg.display.set_caption(caption)
 
     def main_loop(self):

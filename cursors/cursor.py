@@ -30,7 +30,7 @@ def cursor_from_image(image,size,hotspot,location=(0,0),flip=False):
     """
     if size%8:
         raise ValueError("Size must be a multiple of 8.")
-    compile_args = (".","X","o") if flip else ("X",".","o")
+    compile_args = (".", "X", "o") if flip else ("X", ".", "o")
     colors = {(  0,  0,  0,255) : ".",
               (255,255,255,255) : "X",
               (  0,255,255,255) : "o"}
@@ -38,10 +38,10 @@ def cursor_from_image(image,size,hotspot,location=(0,0),flip=False):
     for j in range(size):
         this_row = []
         for i in range(size):
-            where = (i+location[0],j+location[1])
+            where = (i+location[0], j+location[1])
             pixel = tuple(image.get_at(where))
-            this_row.append(colors.get(pixel," "))
+            this_row.append(colors.get(pixel, " "))
         cursor_string.append("".join(this_row))
-    xors,ands = pg.cursors.compile(cursor_string,*compile_args)
-    size = size,size
-    return size,hotspot,xors,ands
+    xors,ands = pg.cursors.compile(cursor_string, *compile_args)
+    size = size, size
+    return size, hotspot, xors, ands

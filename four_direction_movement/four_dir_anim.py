@@ -13,9 +13,9 @@ import pygame as pg
 
 
 CAPTION = "4-Direction Movement with Animation"
-SCREEN_SIZE = (500,500)
-BACKGROUND_COLOR = (100,100,100)
-COLOR_KEY = (255,0,255)
+SCREEN_SIZE = (500, 500)
+BACKGROUND_COLOR = (100, 100, 100)
+COLOR_KEY = (255, 0, 255)
 
 DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
                pg.K_RIGHT : ( 1, 0),
@@ -25,21 +25,23 @@ DIRECT_DICT = {pg.K_LEFT  : (-1, 0),
 
 class Player(object):
     """This class will represent our user controlled character."""
-    def __init__(self,rect,speed,direction=pg.K_RIGHT):
-        """Arguments are a rect representing the Player's location and
+    def __init__(self, rect, speed, direction=pg.K_RIGHT):
+        """
+        Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's
-        starting direction (given as a key-constant)."""
+        starting direction (given as a key-constant).
+        """
         self.rect = pg.Rect(rect)
         self.speed = speed
         self.direction = direction
-        self.old_direction = None #The Players previous direction every frame.
-        self.direction_stack = [] #Held keys in the order they were pressed.
-        self.redraw = False #Force redraw if needed.
+        self.old_direction = None  #The Players previous direction every frame.
+        self.direction_stack = []  #Held keys in the order they were pressed.
+        self.redraw = False  #Force redraw if needed.
         self.image = None
         self.frame  = 0
         self.frames = self.get_frames()
         self.animate_timer = 0.0
-        self.animate_fps   = 7.0
+        self.animate_fps = 7.0
         self.walkframes = []
         self.walkframe_dict = self.make_frame_dict()
         self.adjust_images()
@@ -47,19 +49,21 @@ class Player(object):
     def get_frames(self):
         """Get a list of all frames."""
         sheet = SKEL_IMAGE
-        indices = [[0,0],[1,0],[2,0],[3,0]]
-        return get_images(sheet,indices,self.rect.size)
+        indices = [[0,0], [1,0], [2,0], [3,0]]
+        return get_images(sheet, indices, self.rect.size)
 
     def make_frame_dict(self):
-        """Create a dictionary of direction keys to frames. We can use
-        transform functions to reduce the size of the sprite sheet we need."""
-        frames = {pg.K_LEFT : [self.frames[0],self.frames[1]],
-                  pg.K_RIGHT: [pg.transform.flip(self.frames[0],True,False),
-                               pg.transform.flip(self.frames[1],True,False)],
+        """
+        Create a dictionary of direction keys to frames. We can use
+        transform functions to reduce the size of the sprite sheet we need.
+        """
+        frames = {pg.K_LEFT : [self.frames[0], self.frames[1]],
+                  pg.K_RIGHT: [pg.transform.flip(self.frames[0], True, False),
+                               pg.transform.flip(self.frames[1], True, False)],
                   pg.K_DOWN : [self.frames[3],
-                               pg.transform.flip(self.frames[3],True,False)],
+                               pg.transform.flip(self.frames[3], True, False)],
                   pg.K_UP   : [self.frames[2],
-                               pg.transform.flip(self.frames[2],True,False)]}
+                               pg.transform.flip(self.frames[2], True, False)]}
         return frames
 
     def adjust_images(self):
@@ -82,7 +86,7 @@ class Player(object):
             self.image = self.walkframes[self.frame]
         self.redraw = False
 
-    def add_direction(self,key):
+    def add_direction(self, key):
         """Add a pressed direction key on the direction stack."""
         if key in DIRECT_DICT:
             if key in self.direction_stack:
@@ -90,7 +94,7 @@ class Player(object):
             self.direction_stack.append(key)
             self.direction = self.direction_stack[-1]
 
-    def pop_direction(self,key):
+    def pop_direction(self, key):
         """Pop a released key from the direction stack."""
         if key in DIRECT_DICT:
             if key in self.direction_stack:
@@ -98,7 +102,7 @@ class Player(object):
             if self.direction_stack:
                 self.direction = self.direction_stack[-1]
 
-    def update(self,screen_rect):
+    def update(self, screen_rect):
         """Updates our player appropriately every frame."""
         self.adjust_images()
         if self.direction_stack:
@@ -107,9 +111,9 @@ class Player(object):
             self.rect.y += self.speed*direction_vector[1]
             self.rect.clamp_ip(screen_rect)
 
-    def draw(self,surface):
+    def draw(self, surface):
         """Draws the player to the target surface."""
-        surface.blit(self.image,self.rect)
+        surface.blit(self.image, self.rect)
 
 
 class Control(object):
@@ -122,7 +126,7 @@ class Control(object):
         self.fps = 60.0
         self.done = False
         self.keys = pg.key.get_pressed()
-        self.player = Player((0,0,50,50),3)
+        self.player = Player((0,0,50,50), 3)
         self.player.rect.center = self.screen_rect.center
 
     def event_loop(self):
@@ -138,7 +142,7 @@ class Control(object):
 
     def display_fps(self):
         """Show the program's FPS in the window handle."""
-        caption = "{} - FPS: {:.2f}".format(CAPTION,self.clock.get_fps())
+        caption = "{} - FPS: {:.2f}".format(CAPTION, self.clock.get_fps())
         pg.display.set_caption(caption)
 
     def main_loop(self):
@@ -153,11 +157,11 @@ class Control(object):
             self.display_fps()
 
 
-def get_images(sheet,frame_indices,size):
+def get_images(sheet, frame_indices, size):
     """Get desired images from a sprite sheet."""
     frames = []
     for cell in frame_indices:
-        frame_rect = ((size[0]*cell[0],size[1]*cell[1]),size)
+        frame_rect = ((size[0]*cell[0],size[1]*cell[1]), size)
         frames.append(sheet.subsurface(frame_rect))
     return frames
 
