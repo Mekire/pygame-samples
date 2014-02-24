@@ -280,10 +280,8 @@ class Control(object):
         The viewport will stay centered on the player unless the player
         approaches the edge of the map.
         """
-        for i in (0,1):
-            low = max(0, self.player.rect.center[i]-self.viewport.size[i]//2)
-            high = self.level_rect.size[i]-self.viewport.size[i]
-            self.viewport[i] = min(low, high)
+        self.viewport.center = self.player.rect.center
+        self.viewport.clamp_ip(self.level_rect)
 
     def event_loop(self):
         """We can always quit, and the player can sometimes jump."""

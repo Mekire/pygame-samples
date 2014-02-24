@@ -2,7 +2,7 @@
 This example shows a method of making a player stay centered on a scrolling
 map. When the player moves close to the edges of the map he will move off
 center. This implementation does not employ a tiled map (though the centering
-tecnique works identically). Using a single mask for collision of the entire
+technique works identically). Using a single mask for collision of the entire
 level is not an efficient technique. This example is designed to show
 viewport centering; not efficient collision.
 
@@ -112,10 +112,8 @@ class Level(object):
         The viewport will stay centered on the player unless the player
         approaches the edge of the map.
         """
-        for i in (0, 1):
-            low = max(0, self.player.rect.center[i]-self.viewport.size[i]//2)
-            high = self.rect.size[i]-self.viewport.size[i]
-            self.viewport[i] = min(low, high)
+        self.viewport.center = self.player.rect.center
+        self.viewport.clamp_ip(self.rect)
 
     def draw(self, surface):
         """
