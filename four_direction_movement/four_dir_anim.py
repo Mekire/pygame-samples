@@ -106,7 +106,7 @@ class Player(object):
         """Updates our player appropriately every frame."""
         self.adjust_images()
         if self.direction_stack:
-            direction_vector = DIRECT_DICT[self.direction_stack[-1]]
+            direction_vector = DIRECT_DICT[self.direction]
             self.rect.x += self.speed*direction_vector[0]
             self.rect.y += self.speed*direction_vector[1]
             self.rect.clamp_ip(screen_rect)
