@@ -55,12 +55,13 @@ class Control(object):
         distortion.
         """
         self.image.fill(pg.Color("black"))
-        pg.draw.polygon(self.image,pg.Color("red"), [(0,500),(500,500),(250,0)])
+        triangle_points = [(0,500), (500,500), (250,0)]
+        pg.draw.polygon(self.image, pg.Color("red"), triangle_points)
         if self.screen_rect.size != SCREEN_START_SIZE:
             fit_to_rect = self.image_rect.fit(self.screen_rect)
             fit_to_rect.center = self.screen_rect.center
             scaled = pg.transform.smoothscale(self.image, fit_to_rect.size)
-            self.screen.blit(scaled,fit_to_rect)
+            self.screen.blit(scaled, fit_to_rect)
         else:
             self.screen.blit(self.image, (0,0))
 

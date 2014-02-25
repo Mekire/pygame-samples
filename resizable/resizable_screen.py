@@ -56,10 +56,11 @@ class Control(object):
         the image directly to the display; if not, resize the image first.
         """
         self.image.fill(pg.Color("black"))
-        pg.draw.polygon(self.image,pg.Color("red"), [(0,500),(500,500),(250,0)])
-        if self.screen_rect.size != SCREEN_START_SIZE:
-            scaled = pg.transform.smoothscale(self.image, self.screen_rect.size)
-            self.screen.blit(scaled, (0,0))
+        screen_size = self.screen_rect.size
+        triangle_points = [(0,500), (500,500), (250,0)]
+        pg.draw.polygon(self.image, pg.Color("red"), triangle_points)
+        if screen_size != SCREEN_START_SIZE:
+            pg.transform.smoothscale(self.image, screen_size, self.screen)
         else:
             self.screen.blit(self.image, (0,0))
 
