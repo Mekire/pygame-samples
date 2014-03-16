@@ -41,10 +41,9 @@ class Turret(object):
         """
         x, y = self.gamepad.get_axis(0), self.gamepad.get_axis(1)
         if abs(x) > tolerance or abs(y) > tolerance:
-            self.angle = -math.degrees(math.atan2(float(y), float(x)))+135
-            old_center = self.rect.center
+            self.angle = 135-math.degrees(math.atan2(float(y), float(x)))
             self.barrel = pg.transform.rotate(self.original_barrel, self.angle)
-            self.rect = self.barrel.get_rect(center=old_center)
+            self.rect = self.barrel.get_rect(center=self.rect.center)
 
     def get_event(self, event, objects):
         """Catch and process gamepad events."""

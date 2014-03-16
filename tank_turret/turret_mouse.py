@@ -33,11 +33,10 @@ class Turret(object):
         """
         Find the new angle between the center of the Turret and the mouse.
         """
-        offset = (self.rect.centerx-mouse[0], self.rect.centery-mouse[1])
-        self.angle = math.degrees(math.atan2(*offset))-135
-        old_center = self.rect.center
+        offset = (mouse[1]-self.rect.centery, mouse[0]-self.rect.centerx)
+        self.angle = 135-math.degrees(math.atan2(*offset))
         self.barrel = pg.transform.rotate(self.original_barrel, self.angle)
-        self.rect = self.barrel.get_rect(center=old_center)
+        self.rect = self.barrel.get_rect(center=self.rect.center)
 
     def get_event(self, event, objects):
         """Fire lasers on left click.  Recalculate angle if mouse is moved."""

@@ -41,10 +41,9 @@ class Turret(object):
         old rect's center to ensure our image doesn't shift around.
         """
         if self.spin or force:
-            oldcenter = self.rect.center
             self.angle += self.rotate_speed*self.spin
             self.barrel = pg.transform.rotate(self.original_barrel, self.angle)
-            self.rect = self.barrel.get_rect(center=oldcenter)
+            self.rect = self.barrel.get_rect(center=self.rect.center)
 
     def get_event(self, event, objects):
         """Our turret is passed events from the Control event loop."""
