@@ -1,29 +1,41 @@
+#! /usr/bin/env python
+
 """
 A very simple example showing how to drag an item with the mouse.
+Dragging in this example uses relative mouse movement.
 
 -Written by Sean J. McKiernan 'Mekire'
 """
 
 import os
 import sys
+
 import pygame as pg
 
 
+CAPTION = "Drag the Red Square"
 SCREEN_SIZE = (1000, 600)
 
 
 class Character(object):
-    """A class to represent our lovable red sqaure."""
-    def __init__(self, *rect_style_args):
-        """Accepts arguments in all the same forms a pygame.Rect would."""
-        self.rect = pg.Rect(rect_style_args)
+    """
+    A class to represent our lovable red sqaure.
+    """
+    SIZE = (150, 150)
+    
+    def __init__(self, pos):
+        """
+        The argument pos corresponds to the center of our rectangle.
+        """
+        self.rect = pg.Rect((0,0), Character.SIZE)
+        self.rect.center = pos
         self.text, self.text_rect = self.setup_font()
         self.click = False
 
     def setup_font(self):
         """
         If your text doesn't change it is best to render once, rather than
-        rerender every time you want the text.  Rendering text every frame is
+        re-render every time you want the text.  Rendering text every frame is
         a common source of bottlenecks in beginner programs.
         """
         font = pg.font.SysFont('timesnewroman', 30)
@@ -32,10 +44,21 @@ class Character(object):
         label_rect = label.get_rect()
         return label, label_rect
 
+    def check_click(self, pos):
+        """
+        This function is called from the event loop to check if a click
+        overlaps with the player rect.
+        pygame.mouse.get_rel must be called on an initial hit so that
+        subsequent calls give the correct relative offset.
+        """
+        if self.rect.collidepoint(pos):
+            self.click = True
+            pg.mouse.get_rel()
+
     def update(self, screen_rect):
         """
         If the square is currently clicked, update its position based on the
-        relative mouse movement.
+        relative mouse movement.  Clamp the rect to the screen.
         """
         if self.click:
             self.rect.move_ip(pg.mouse.get_rel())
@@ -43,29 +66,29 @@ class Character(object):
         self.text_rect.center = (self.rect.centerx, self.rect.centery+90)
 
     def draw(self, surface):
-        """Blit image and text to the target surface."""
+        """
+        Blit image and text to the target surface.
+        """
         surface.fill(pg.Color("red"), self.rect)
         surface.blit(self.text, self.text_rect)
 
 
-class Control(object):
-    """A control class to manage our event and game loops."""
+class App(object):
+    """
+    A control class to manage our event and game loops.
+    """
     def __init__(self):
         """
         Here we have set up the pygame session within the init.
         Sometimes it is more convenient to do this elsewhere.
         """
-        os.environ['SDL_VIDEO_CENTERED'] = '1'
-        pg.init()
-        pg.display.set_caption("Drag the Red Square")
-        self.screen = pg.display.set_mode(SCREEN_SIZE)
+        self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
         self.clock = pg.time.Clock()
-        self.fps = 60.0
+        self.fps = 60
         self.done = False
         self.keys = pg.key.get_pressed()
-        self.player = Character(0, 0, 150, 150)
-        self.player.rect.center = self.screen_rect.center
+        self.player = Character(self.screen_rect.center)
 
     def event_loop(self):
         """
@@ -74,33 +97,48 @@ class Control(object):
         to have more than one event loop.
         """
         for event in pg.event.get():
-            self.keys = pg.key.get_pressed()
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.done = True
             elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                if self.player.rect.collidepoint(event.pos):
-                    self.player.click = True
-                    pg.mouse.get_rel()
+                self.player.check_click(event.pos)
             elif event.type == pg.MOUSEBUTTONUP and event.button == 1:
                 self.player.click = False
+            elif event.type in (pg.KEYUP, pg.KEYDOWN):
+                self.keys = pg.key.get_pressed() 
+
+    def render(self):
+        """
+        All drawing should be found here.
+        This is the only place that pygame.display.update() should be found.
+        """
+        self.screen.fill(pg.Color("black"))
+        self.player.draw(self.screen)
+        pg.display.update()
 
     def main_loop(self):
         """
         This is the game loop for the entire program.
         Like the event_loop, there should not be more than one game_loop.
-        This is the only place that pygame.display.update() should be found.
         """
         while not self.done:
             self.event_loop()
             self.player.update(self.screen_rect)
-            self.screen.fill(pg.Color("black"))
-            self.player.draw(self.screen)
-            pg.display.update()
+            self.render()
             self.clock.tick(self.fps)
 
 
-if __name__ == "__main__":
-    run_it = Control()
-    run_it.main_loop()
+def main():
+    """
+    Prepare our environment, create a display, and start the program.
+    """
+    os.environ['SDL_VIDEO_CENTERED'] = '1'
+    pg.init()
+    pg.display.set_caption(CAPTION)
+    pg.display.set_mode(SCREEN_SIZE)
+    App().main_loop()
     pg.quit()
     sys.exit()
+    
+
+if __name__ == "__main__":
+    main()
