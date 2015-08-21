@@ -75,7 +75,7 @@ class Character(object):
 
 class App(object):
     """
-    A control class to manage our event and game loops.
+    A class to manage our event, game loop, and overall program flow.
     """
     def __init__(self):
         """
