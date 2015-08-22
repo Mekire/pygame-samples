@@ -79,8 +79,8 @@ class App(object):
     """
     def __init__(self):
         """
-        Here we have set up the pygame session within the init.
-        Sometimes it is more convenient to do this elsewhere.
+        Get a reference to the screen (created in main); define necessary
+        attributes; and create our player (draggable rect).
         """
         self.screen = pg.display.get_surface()
         self.screen_rect = self.screen.get_rect()
